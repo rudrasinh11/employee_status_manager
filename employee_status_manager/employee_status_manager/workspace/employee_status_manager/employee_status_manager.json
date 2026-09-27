@@ -1,0 +1,90 @@
+{
+ "category": "Modules",
+ "charts": [],
+ "content": "[{\"id\": \"header\", \"type\": \"header\", \"data\": {\"text\": \"Employee Status & Overtime Operations\", \"level\": 3}}, {\"id\": \"c1\", \"type\": \"card\", \"data\": {\"card_name\": \"Quick Operations\", \"col\": 4}}, {\"id\": \"c2\", \"type\": \"card\", \"data\": {\"card_name\": \"Attendance & Overtime Records\", \"col\": 4}}, {\"id\": \"c3\", \"type\": \"card\", \"data\": {\"card_name\": \"Status Snapshots\", \"col\": 4}}]",
+ "creation": "2026-09-27 12:00:00.000000",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "user-check",
+ "idx": 1,
+ "indicator_color": "green",
+ "is_hidden": 0,
+ "label": "Employee Status Manager",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Live Command Hub",
+   "link_count": 0,
+   "link_to": "employee_status_dashboard",
+   "link_type": "Page",
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Employee Overtime Requests",
+   "link_count": 0,
+   "link_to": "Employee Overtime Request",
+   "link_type": "DocType",
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Employee Half Day Requests",
+   "link_count": 0,
+   "link_to": "Employee Half Day Request",
+   "link_type": "DocType",
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Employee Daily Status",
+   "link_count": 0,
+   "link_to": "Employee Daily Status",
+   "link_type": "DocType",
+   "type": "Link"
+  }
+ ],
+ "modified": "2026-09-27 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Employee Status Manager",
+ "name": "Employee Status Manager",
+ "number_cards": [],
+ "owner": "Administrator",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [],
+ "sequence_id": 1.0,
+ "shortcuts": [
+  {
+   "color": "Purple",
+   "doc_view": "",
+   "format": "{} Hours Logged",
+   "label": "Overtime Requests",
+   "link_to": "Employee Overtime Request",
+   "stats_filter": "[[\"Employee Overtime Request\",\"docstatus\",\"=\",\"1\"]]",
+   "type": "DocType"
+  },
+  {
+   "color": "Orange",
+   "doc_view": "",
+   "label": "Half Day Requests",
+   "link_to": "Employee Half Day Request",
+   "type": "DocType"
+  },
+  {
+   "color": "Green",
+   "doc_view": "",
+   "label": "Live Status Dashboard",
+   "link_to": "employee_status_dashboard",
+   "type": "Page"
+  }
+ ],
+ "title": "Employee Status Manager"
+}
