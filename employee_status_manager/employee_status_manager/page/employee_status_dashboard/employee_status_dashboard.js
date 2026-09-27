@@ -30,11 +30,11 @@ class EmployeeStatusDashboard {
             me.show_new_overtime_modal();
         }, 'octicon octicon-plus');
 
-        this.page.add_secondary_action(__('New Half Day Request'), function() {
+        this.page.add_button(__('New Half Day Request'), function() {
             me.show_new_halfday_modal();
         });
 
-        this.page.add_inner_button(__('Refresh'), function() {
+        this.page.add_button(__('Refresh'), function() {
             me.refresh_all();
         });
     }

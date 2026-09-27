@@ -1,8 +1,9 @@
 import frappe
 from frappe.utils import nowdate, flt, getdate
+from typing import Optional, List, Dict, Any
 
 @frappe.whitelist()
-def get_dashboard_stats(date=None):
+def get_dashboard_stats(date: Optional[str] = None) -> Dict[str, Any]:
     if not date:
         date = nowdate()
 
@@ -37,7 +38,6 @@ def get_dashboard_stats(date=None):
     )
     present_count = sum(1 for r in ds_records if r.status in ["Present", "Overtime Active"])
     if not ds_records and total_employees:
-        # Default mock / assumed present if no explicit log
         present_count = max(0, total_employees - half_day_count)
 
     return {
@@ -53,11 +53,16 @@ def get_dashboard_stats(date=None):
     }
 
 @frappe.whitelist()
-def get_employee_roster(date=None, department=None, status_filter=None, search=None):
+def get_employee_roster(
+    date: Optional[str] = None,
+    department: Optional[str] = None,
+    status_filter: Optional[str] = None,
+    search: Optional[str] = None
+) -> List[Dict[str, Any]]:
     if not date:
         date = nowdate()
 
-    emp_filters = {"status": "Active"}
+    emp_filters: Dict[str, Any] = {"status": "Active"}
     if department:
         emp_filters["department"] = department
     if search:
@@ -71,7 +76,6 @@ def get_employee_roster(date=None, department=None, status_filter=None, search=N
         limit=100
     )
 
-    # Fetch daily statuses for the given date
     daily_statuses = {
         r.employee: r for r in frappe.get_all(
             "Employee Daily Status",
@@ -80,7 +84,6 @@ def get_employee_roster(date=None, department=None, status_filter=None, search=N
         )
     }
 
-    # Fetch approved OT for date
     ot_dict = {
         r.employee: r for r in frappe.get_all(
             "Employee Overtime Request",
@@ -89,7 +92,6 @@ def get_employee_roster(date=None, department=None, status_filter=None, search=N
         )
     }
 
-    # Fetch approved Half Day for date
     hd_dict = {
         r.employee: r for r in frappe.get_all(
             "Employee Half Day Request",
@@ -139,7 +141,7 @@ def get_employee_roster(date=None, department=None, status_filter=None, search=N
     return roster
 
 @frappe.whitelist()
-def get_pending_requests():
+def get_pending_requests() -> Dict[str, Any]:
     ot_requests = frappe.get_all(
         "Employee Overtime Request",
         fields=["name", "employee", "employee_name", "department", "overtime_date", "start_time", "end_time", "overtime_hours", "overtime_type", "total_overtime_pay", "reason", "status"],
@@ -160,7 +162,12 @@ def get_pending_requests():
     }
 
 @frappe.whitelist()
-def process_request_action(doctype, docname, action, rejection_reason=None):
+def process_request_action(
+    doctype: str,
+    docname: str,
+    action: str,
+    rejection_reason: Optional[str] = None
+) -> Dict[str, Any]:
     if not frappe.has_permission(doctype, "write"):
         frappe.throw("You do not have permission to manage this request.", frappe.PermissionError)
 
@@ -175,7 +182,16 @@ def process_request_action(doctype, docname, action, rejection_reason=None):
         frappe.throw("Invalid action.")
 
 @frappe.whitelist()
-def quick_submit_overtime(employee, overtime_date, start_time, end_time, overtime_hours, reason, overtime_type="Regular Overtime", hourly_rate=0):
+def quick_submit_overtime(
+    employee: str,
+    overtime_date: Optional[str] = None,
+    start_time: Optional[str] = None,
+    end_time: Optional[str] = None,
+    overtime_hours: float = 0.0,
+    reason: Optional[str] = None,
+    overtime_type: str = "Regular Overtime",
+    hourly_rate: float = 0.0
+) -> Dict[str, Any]:
     doc = frappe.get_doc({
         "doctype": "Employee Overtime Request",
         "employee": employee,
@@ -192,7 +208,13 @@ def quick_submit_overtime(employee, overtime_date, start_time, end_time, overtim
     return {"status": "success", "name": doc.name, "message": "Overtime request submitted!"}
 
 @frappe.whitelist()
-def quick_submit_half_day(employee, date, half_day_session, reason, leave_type="Casual Leave"):
+def quick_submit_half_day(
+    employee: str,
+    date: Optional[str] = None,
+    half_day_session: str = "First Half (Morning)",
+    reason: Optional[str] = None,
+    leave_type: str = "Casual Leave"
+) -> Dict[str, Any]:
     doc = frappe.get_doc({
         "doctype": "Employee Half Day Request",
         "employee": employee,
@@ -206,7 +228,7 @@ def quick_submit_half_day(employee, date, half_day_session, reason, leave_type="
     return {"status": "success", "name": doc.name, "message": "Half Day request submitted!"}
 
 @frappe.whitelist()
-def get_employees_dropdown():
+def get_employees_dropdown() -> List[Dict[str, Any]]:
     return frappe.get_all(
         "Employee",
         filters={"status": "Active"},
@@ -215,5 +237,5 @@ def get_employees_dropdown():
     )
 
 @frappe.whitelist()
-def get_departments_list():
+def get_departments_list() -> List[Dict[str, Any]]:
     return frappe.get_all("Department", fields=["name"], order_by="name asc")
