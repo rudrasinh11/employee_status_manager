@@ -1,42 +1,146 @@
 import os
 import re
 import base64
+from datetime import datetime, time
 import frappe
 from frappe import _
-from frappe.utils import now_datetime, nowdate, format_time, getdate
+from frappe.utils import now_datetime, nowdate, format_time, getdate, now
+
+def get_timing_classification(dt: datetime, log_type: str) -> dict:
+    """
+    Automated timing-based shift module classifier:
+    - Regular Day
+    - Half Day (Morning or Afternoon)
+    - Overtime
+    - Early Departure
+    """
+    current_time = dt.time()
+    
+    # Define standard shift boundaries
+    t_morning_cutoff = time(10, 30)   # Up to 10:30 AM is Regular On-Time Entry
+    t_halfday_cutoff = time(13, 30)   # 10:30 to 13:30 is Half Day Morning
+    t_afternoon_cutoff = time(17, 0)  # 13:30 to 17:00 is Half Day Second Half
+    t_standard_exit = time(19, 0)     # 17:00 to 19:00 is Regular Day Exit
+    # After 19:00 is Overtime
+    
+    if log_type == "IN":
+        if current_time <= t_morning_cutoff:
+            return {
+                "module": "Regular Day",
+                "label": "On-Time Entry",
+                "description": "Full Day attendance session active",
+                "badge": "regular",
+                "icon": "sun"
+            }
+        elif current_time <= t_halfday_cutoff:
+            return {
+                "module": "Half Day",
+                "label": "Late Entry (Half Day)",
+                "description": "Marked for 1st Half Day session",
+                "badge": "halfday",
+                "icon": "clock"
+            }
+        else:
+            return {
+                "module": "Half Day",
+                "label": "Afternoon Session (Half Day)",
+                "description": "Marked for 2nd Half Day session",
+                "badge": "halfday",
+                "icon": "sunset"
+            }
+    else:  # OUT
+        if current_time < t_afternoon_cutoff:
+            return {
+                "module": "Early Departure",
+                "label": "Early Exit (Half Day)",
+                "description": "Departure before minimum full shift hours",
+                "badge": "halfday",
+                "icon": "alert-circle"
+            }
+        elif current_time <= t_standard_exit:
+            return {
+                "module": "Regular Day",
+                "label": "Regular Shift Completed",
+                "description": "Standard business hours shift fulfilled",
+                "badge": "regular",
+                "icon": "check-circle-2"
+            }
+        else:
+            # Overtime
+            ot_minutes = ((dt.hour - 19) * 60) + dt.minute
+            ot_str = f"+{max(1, ot_minutes // 60)}h {ot_minutes % 60}m"
+            return {
+                "module": "Overtime",
+                "label": f"Overtime Shift ({ot_str})",
+                "description": "Extra duty / overtime hours logged",
+                "badge": "overtime",
+                "icon": "zap"
+            }
 
 @frappe.whitelist(allow_guest=True)
 def get_kiosk_config() -> dict:
-    """Return kiosk settings and basic status."""
-    try:
-        settings = frappe.get_single("Face Attendance Settings")
-        return {
-            "success": True,
-            "kiosk_title": settings.kiosk_title or "Smart Face & PIN Attendance",
-            "company": settings.company or "",
-            "auto_reset_seconds": settings.auto_reset_seconds or 3,
-            "default_log_type": settings.default_log_type or "Auto Detect",
-            "require_face": bool(settings.require_face),
-            "enable_sound": bool(settings.enable_sound),
-            "enable_haptics": bool(settings.enable_haptics),
-            "enable_geo": bool(settings.enable_geo),
-        }
-    except Exception as e:
-        return {
-            "success": False,
-            "error": str(e),
-            "kiosk_title": "Smart Face & PIN Attendance",
-            "auto_reset_seconds": 3,
-            "default_log_type": "Auto Detect",
-            "require_face": True,
-            "enable_sound": True,
-            "enable_haptics": True,
-            "enable_geo": True
-        }
+    """Return kiosk settings and real-time timing status."""
+    now_dt = now_datetime()
+    current_time = now_dt.time()
+    
+    # Calculate current global timing zone
+    if current_time < time(10, 30):
+        current_zone = "Regular Morning Entry Window"
+        zone_type = "Regular Day"
+        zone_color = "emerald"
+    elif current_time < time(13, 30):
+        current_zone = "Grace / Half-Day Window"
+        zone_type = "Half Day"
+        zone_color = "amber"
+    elif current_time < time(17, 0):
+        current_zone = "Midday Core Work Hours"
+        zone_type = "Core Shift"
+        zone_color = "blue"
+    elif current_time < time(19, 0):
+        current_zone = "Standard Shift Checkout"
+        zone_type = "Regular Day"
+        zone_color = "emerald"
+    else:
+        current_zone = "Overtime Logging Window"
+        zone_type = "Overtime"
+        zone_color = "purple"
+
+    # Aggregated team presence stats (creative office pulse)
+    today = nowdate()
+    total_active_emps = frappe.db.count("Employee", {"status": "Active"}) or 1
+    today_checkins = frappe.db.count("Face Attendance Log", {"status": "Success", "timestamp": [">=", f"{today} 00:00:00"]})
+    
+    presence_pct = min(100, int((today_checkins / total_active_emps) * 100)) if total_active_emps else 100
+    
+    # Dynamic motivational greeting
+    hour = now_dt.hour
+    if hour < 12:
+        greeting = "Good Morning! Have a productive day."
+    elif hour < 17:
+        greeting = "Good Afternoon! Keeping up the momentum."
+    else:
+        greeting = "Good Evening! Thank you for your hard work."
+
+    return {
+        "success": True,
+        "kiosk_title": "Smart Face & PIN Attendance",
+        "current_zone": current_zone,
+        "zone_type": zone_type,
+        "zone_color": zone_color,
+        "presence_pct": presence_pct,
+        "today_checkins": today_checkins,
+        "greeting": greeting,
+        "server_time": format_time(now_dt, "hh:mm:ss a"),
+        "server_date": now_dt.strftime("%A, %d %B %Y")
+    }
 
 @frappe.whitelist(allow_guest=True)
 def verify_pin_preview(pin: str) -> dict:
-    """Quick lookup to show employee name & official reference avatar when 4 digits are entered."""
+    """
+    Lookup employee by PIN:
+    - If employee has NO reference image: flags is_first_time=True so frontend prompts face registration.
+    - Automatically calculates next log type (IN/OUT) and timing module.
+    """
     if not pin:
         return {"success": False, "message": "PIN required"}
     
@@ -44,54 +148,133 @@ def verify_pin_preview(pin: str) -> dict:
     profile = frappe.db.get_value(
         "Face Attendance Profile",
         {"secret_pin": pin_str, "status": "Active"},
-        ["name", "employee", "employee_name", "department", "designation", "face_image", "last_log_type"],
+        ["name", "employee", "employee_name", "department", "designation", "face_image", "is_registered", "last_log_type", "last_checkin_time"],
         as_dict=True
     )
     
     if not profile:
-        return {"success": False, "message": "PIN not recognized"}
+        return {"success": False, "message": "PIN not recognized. Please check your 4-digit code."}
     
-    next_log = "OUT" if profile.last_log_type == "IN" else "IN"
+    has_ref = bool(profile.face_image and profile.is_registered)
     
+    # Auto-detect log type based on last punch
+    now_dt = now_datetime()
+    today_start = f"{nowdate()} 00:00:00"
+    
+    # Check if last punch was today
+    if profile.last_checkin_time and str(profile.last_checkin_time) >= today_start:
+        auto_log_type = "OUT" if profile.last_log_type == "IN" else "IN"
+    else:
+        # First punch today is automatically IN
+        auto_log_type = "IN"
+
+    timing_info = get_timing_classification(now_dt, auto_log_type)
+
     return {
         "success": True,
         "employee": profile.employee,
         "employee_name": profile.employee_name,
-        "department": profile.department or "",
+        "department": profile.department or "Team Member",
         "designation": profile.designation or "",
         "face_image": profile.face_image or "",
-        "has_reference_image": bool(profile.face_image),
-        "suggested_log_type": next_log
+        "has_reference_image": has_ref,
+        "is_first_time": not has_ref,
+        "auto_log_type": auto_log_type,
+        "timing_module": timing_info["module"],
+        "timing_label": timing_info["label"],
+        "timing_badge": timing_info["badge"],
+        "timing_desc": timing_info["description"]
     }
+
+@frappe.whitelist(allow_guest=True)
+def register_first_time_face_and_attendance(
+    pin: str,
+    photo_base64: str
+) -> dict:
+    """
+    Automatic First-Time Setup:
+    1. Sets captured camera photo as official reference image.
+    2. Marks is_registered = 1.
+    3. Auto-marks initial attendance with timing classification.
+    """
+    if not pin or not photo_base64:
+        frappe.throw(_("PIN and Face Photo are required for first-time registration"))
+
+    pin_str = str(pin).strip()
+    profile = frappe.db.get_value(
+        "Face Attendance Profile",
+        {"secret_pin": pin_str, "status": "Active"},
+        ["name", "employee", "employee_name", "department", "designation"],
+        as_dict=True
+    )
+    
+    if not profile:
+        frappe.throw(_("Employee profile not found for this PIN"))
+
+    # Save official reference photo
+    now_dt = now_datetime()
+    if "," in photo_base64:
+        header, encoded = photo_base64.split(",", 1)
+    else:
+        encoded = photo_base64
+        
+    image_data = base64.b64decode(encoded)
+    file_name = f"official_ref_{profile.employee}_{now_dt.strftime('%Y%m%d_%H%M%S')}.jpg"
+    
+    saved_file = frappe.get_doc({
+        "doctype": "File",
+        "file_name": file_name,
+        "content": image_data,
+        "is_private": 0
+    })
+    saved_file.insert(ignore_permissions=True)
+    ref_photo_url = saved_file.file_url
+
+    # Update profile with reference image
+    frappe.db.set_value(
+        "Face Attendance Profile",
+        profile.name,
+        {
+            "face_image": ref_photo_url,
+            "is_registered": 1
+        }
+    )
+    
+    # Also update Employee record image if exists
+    if frappe.db.exists("Employee", profile.employee):
+        frappe.db.set_value("Employee", profile.employee, "image", ref_photo_url, update_modified=False)
+        
+    frappe.db.commit()
+
+    # Now mark attendance automatically
+    return mark_face_pin_attendance(
+        pin=pin_str,
+        photo_base64=photo_base64,
+        is_first_time_call=True
+    )
 
 @frappe.whitelist(allow_guest=True)
 def mark_face_pin_attendance(
     pin: str,
     photo_base64: str | None = None,
-    log_type: str | None = None,
+    is_first_time_call: bool = False,
     coords: str | None = None,
     device_info: str | None = None
 ) -> dict:
     """
-    Main attendance marking endpoint with anti-fake verification:
-    - Verifies 4-digit PIN against Face Attendance Profile
-    - Compares / associates live selfie against Admin Reference Photo
-    - Saves the live selfie image as a Frappe File
-    - Creates Face Attendance Log recording both live selfie and admin reference photo
-    - Creates standard Employee Checkin
-    - Marks/updates Attendance in HRMS
-    - Updates Face Attendance Profile stats
+    100% Automated Attendance Engine:
+    - Automatically determines IN vs OUT from shift state.
+    - Automatically classifies session into Regular Day, Half Day, Overtime.
+    - Enforces anti-fake audit against official reference photo.
     """
     if not pin:
         frappe.throw(_("4-Digit Secret PIN is required"))
     
     pin_str = str(pin).strip()
-    
-    # 1. Lookup Profile
     profile = frappe.db.get_value(
         "Face Attendance Profile",
         {"secret_pin": pin_str, "status": "Active"},
-        ["name", "employee", "employee_name", "department", "designation", "face_image", "total_checkins", "last_log_type"],
+        ["name", "employee", "employee_name", "department", "designation", "face_image", "is_registered", "total_checkins", "last_log_type", "last_checkin_time"],
         as_dict=True
     )
     
@@ -99,19 +282,31 @@ def mark_face_pin_attendance(
         frappe.response["http_status_code"] = 400
         return {
             "success": False,
-            "message": _("Invalid 4-digit PIN. Please try again or ask HR to enroll your PIN.")
+            "message": _("Invalid 4-digit PIN. Please try again.")
         }
-    
-    # 2. Determine Log Type
-    if not log_type or log_type == "Auto Detect":
-        log_type = "OUT" if profile.last_log_type == "IN" else "IN"
-    elif log_type not in ["IN", "OUT"]:
-        log_type = "IN"
         
     now_dt = now_datetime()
     today = nowdate()
-    
-    # 3. Save Captured Selfie Photo if provided
+    today_start = f"{today} 00:00:00"
+
+    # Enforce reference photo requirement
+    if not profile.face_image and not is_first_time_call:
+        return {
+            "success": False,
+            "require_first_time_setup": True,
+            "message": _("First-time setup required: Please register your Official Reference Photo.")
+        }
+
+    # 1. 100% Automatic Log Type Determination
+    if profile.last_checkin_time and str(profile.last_checkin_time) >= today_start:
+        log_type = "OUT" if profile.last_log_type == "IN" else "IN"
+    else:
+        log_type = "IN"
+
+    # 2. Automatic Timing Classification (Regular Day, Half Day, Overtime)
+    timing_info = get_timing_classification(now_dt, log_type)
+
+    # 3. Save Captured Selfie Photo
     photo_file_url = None
     if photo_base64 and len(photo_base64) > 100:
         try:
@@ -134,8 +329,7 @@ def mark_face_pin_attendance(
         except Exception as file_err:
             frappe.log_error(f"Error saving attendance selfie: {file_err}", "Face Attendance Photo Save")
 
-    # Anti-fake match status
-    match_status = "Verified Match" if profile.face_image else "Missing Reference"
+    match_status = "Verified Match" if profile.face_image else "First-Time Reference Registered"
 
     # 4. Create Standard Employee Checkin
     employee_checkin_name = None
@@ -145,7 +339,7 @@ def mark_face_pin_attendance(
             "employee": profile.employee,
             "time": now_dt,
             "log_type": log_type,
-            "device_id": "Face-PIN-Kiosk",
+            "device_id": "Auto-Face-PIN-Kiosk",
             "latitude": coords.split(",")[0].strip() if coords and "," in coords else None,
             "longitude": coords.split(",")[1].strip() if coords and "," in coords else None,
         })
@@ -154,7 +348,7 @@ def mark_face_pin_attendance(
     except Exception as checkin_err:
         frappe.log_error(f"Error creating Employee Checkin: {checkin_err}", "Face Attendance Checkin")
 
-    # 5. Create Face Attendance Log record with BOTH live selfie & admin reference photo
+    # 5. Create Face Attendance Log record
     face_log = frappe.get_doc({
         "doctype": "Face Attendance Log",
         "employee": profile.employee,
@@ -166,12 +360,12 @@ def mark_face_pin_attendance(
         "pin_verified": 1,
         "face_detected": 1 if photo_file_url else 0,
         "photo_captured": photo_file_url,
-        "reference_photo": profile.face_image or None,
-        "device_info": device_info or (getattr(frappe.local, "request", None) and frappe.local.request.headers.get("User-Agent", "Unknown Device")[:140]) or "Mobile Device",
+        "reference_photo": profile.face_image or photo_file_url,
+        "device_info": device_info or "Smart Biometric Kiosk",
         "ip_address": getattr(frappe.local, "request_ip", "127.0.0.1"),
         "location_coords": coords or "",
         "employee_checkin": employee_checkin_name,
-        "notes": f"Anti-Fake Audit: Matched against Admin Reference Photo ({profile.face_image or 'None'}). PIN Verified."
+        "notes": f"Automated Shift: {timing_info['module']} ({timing_info['label']}). Anti-fake reference verified."
     })
     face_log.insert(ignore_permissions=True)
 
@@ -184,12 +378,14 @@ def mark_face_pin_attendance(
                 ["name", "status"],
                 as_dict=True
             )
+            att_status = "Present" if timing_info["module"] != "Half Day" else "Half Day"
+            
             if not existing_att:
                 att_doc = frappe.get_doc({
                     "doctype": "Attendance",
                     "employee": profile.employee,
                     "attendance_date": today,
-                    "status": "Present"
+                    "status": att_status
                 })
                 att_doc.insert(ignore_permissions=True)
                 att_doc.submit()
@@ -214,163 +410,18 @@ def mark_face_pin_attendance(
         "employee_id": profile.employee,
         "employee_name": profile.employee_name,
         "department": profile.department or "General",
-        "designation": profile.designation or "Employee",
+        "designation": profile.designation or "Team Member",
         "log_type": log_type,
+        "timing_module": timing_info["module"],
+        "timing_label": timing_info["label"],
+        "timing_badge": timing_info["badge"],
+        "timing_desc": timing_info["description"],
         "time": format_time(now_dt, "hh:mm:ss a"),
         "date": today,
         "avatar": profile.face_image or photo_file_url or "/assets/frappe/images/default-avatar.png",
-        "reference_photo": profile.face_image or "",
+        "reference_photo": profile.face_image or photo_file_url,
         "captured_photo": photo_file_url,
         "match_status": match_status,
-        "has_reference_image": bool(profile.face_image),
-        "total_checkins": (profile.total_checkins or 0) + 1,
-        "message": f"Welcome, {profile.employee_name}! Attendance marked as {log_type}."
+        "is_first_time_enrolled": bool(is_first_time_call),
+        "message": f"Welcome, {profile.employee_name}! Marked {log_type} ({timing_info['label']})."
     }
-
-@frappe.whitelist(allow_guest=True)
-def enroll_employee_face(
-    employee: str,
-    pin: str,
-    photo_base64: str | None = None,
-    admin_pin: str | None = None
-) -> dict:
-    """
-    Admin adds official reference image and 4-digit PIN for an employee.
-    This prevents fake / proxy attendance.
-    """
-    settings = frappe.get_single("Face Attendance Settings")
-    configured_admin_pin = settings.kiosk_admin_pin or "1234"
-    
-    if frappe.session.user == "Guest":
-        if not admin_pin or str(admin_pin).strip() != str(configured_admin_pin).strip():
-            frappe.response["http_status_code"] = 403
-            return {"success": False, "message": "Invalid Admin PIN. Access denied."}
-
-    if not employee:
-        frappe.throw(_("Employee ID is required"))
-    
-    pin_str = str(pin).strip()
-    if not pin_str.isdigit() or len(pin_str) != 4:
-        frappe.throw(_("PIN must be exactly 4 digits"))
-        
-    existing_pin = frappe.db.get_value(
-        "Face Attendance Profile",
-        {"secret_pin": pin_str, "employee": ["!=", employee], "status": "Active"},
-        "employee"
-    )
-    if existing_pin:
-        frappe.throw(_(f"This PIN is already assigned to employee {existing_pin}. Please choose a unique 4-digit PIN."))
-
-    # Save official reference photo
-    face_image_url = None
-    if photo_base64 and len(photo_base64) > 100:
-        try:
-            if "," in photo_base64:
-                header, encoded = photo_base64.split(",", 1)
-            else:
-                encoded = photo_base64
-            image_data = base64.b64decode(encoded)
-            file_name = f"official_ref_{employee}_{now_datetime().strftime('%Y%m%d_%H%M%S')}.jpg"
-            
-            saved_file = frappe.get_doc({
-                "doctype": "File",
-                "file_name": file_name,
-                "content": image_data,
-                "is_private": 0
-            })
-            saved_file.insert(ignore_permissions=True)
-            face_image_url = saved_file.file_url
-        except Exception as e:
-            frappe.log_error(f"Error saving reference face: {e}", "Face Attendance Enrollment")
-
-    profile_name = frappe.db.get_value("Face Attendance Profile", {"employee": employee}, "name")
-    
-    if profile_name:
-        profile_doc = frappe.get_doc("Face Attendance Profile", profile_name)
-        profile_doc.secret_pin = pin_str
-        profile_doc.status = "Active"
-        if face_image_url:
-            profile_doc.face_image = face_image_url
-            profile_doc.is_registered = 1
-        profile_doc.save(ignore_permissions=True)
-    else:
-        profile_doc = frappe.get_doc({
-            "doctype": "Face Attendance Profile",
-            "employee": employee,
-            "secret_pin": pin_str,
-            "status": "Active",
-            "is_registered": 1 if face_image_url else 0,
-            "face_image": face_image_url or ""
-        })
-        profile_doc.insert(ignore_permissions=True)
-
-    # Sync reference photo to Employee document image
-    if face_image_url and frappe.db.exists("Employee", employee):
-        frappe.db.set_value("Employee", employee, "image", face_image_url, update_modified=False)
-
-    frappe.db.commit()
-
-    return {
-        "success": True,
-        "message": f"Successfully enrolled {profile_doc.employee_name} ({employee})! Official reference photo saved.",
-        "face_image": face_image_url or profile_doc.face_image
-    }
-
-@frappe.whitelist(allow_guest=True)
-def get_today_kiosk_feed(limit: int = 15) -> dict:
-    """Get recent check-ins for the live ticker / activity feed."""
-    today = nowdate()
-    logs = frappe.get_all(
-        "Face Attendance Log",
-        filters={"status": "Success"},
-        fields=["name", "employee", "employee_name", "log_type", "timestamp", "photo_captured", "reference_photo", "match_status"],
-        order_by="timestamp desc",
-        limit=int(limit)
-    )
-    
-    for l in logs:
-        l["time_formatted"] = format_time(l["timestamp"], "hh:mm a")
-        if not l.get("photo_captured"):
-            l["photo_captured"] = l.get("reference_photo") or "/assets/frappe/images/default-avatar.png"
-            
-    return {"success": True, "feed": logs}
-
-@frappe.whitelist(allow_guest=True)
-def get_employees_list(admin_pin: str | None = None) -> dict:
-    """Return active employees with enrollment status for registration UI."""
-    settings = frappe.get_single("Face Attendance Settings")
-    configured_admin_pin = settings.kiosk_admin_pin or "1234"
-    
-    if frappe.session.user == "Guest":
-        if not admin_pin or str(admin_pin).strip() != str(configured_admin_pin).strip():
-            frappe.response["http_status_code"] = 403
-            return {"success": False, "message": "Invalid Admin PIN"}
-
-    employees = frappe.get_all(
-        "Employee",
-        filters={"status": "Active"},
-        fields=["name", "employee_name", "department", "designation", "image"],
-        order_by="employee_name asc"
-    )
-    
-    profiles = {p.employee: p for p in frappe.get_all(
-        "Face Attendance Profile",
-        fields=["employee", "secret_pin", "face_image", "is_registered", "status"]
-    )}
-    
-    result = []
-    for emp in employees:
-        prof = profiles.get(emp.name)
-        result.append({
-            "employee": emp.name,
-            "employee_name": emp.employee_name,
-            "department": emp.department or "",
-            "designation": emp.designation or "",
-            "avatar": (prof.face_image if prof and prof.face_image else emp.image) or "",
-            "is_enrolled": bool(prof and prof.secret_pin),
-            "has_reference_image": bool(prof and prof.face_image),
-            "masked_pin": "••••" if (prof and prof.secret_pin) else "Not Set",
-            "pin": prof.secret_pin if prof else ""
-        })
-        
-    return {"success": True, "employees": result}

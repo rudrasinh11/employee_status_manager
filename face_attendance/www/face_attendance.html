@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Smart Face & PIN Attendance System</title>
+  <title>Smart Biometric Face & PIN Attendance</title>
   
-  <!-- Modern Inter & Outfit Fonts -->
+  <!-- Premium Modern Typography (Inter & Outfit) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <!-- Vue 3 CDN -->
+  <!-- Vue 3 Production CDN -->
   <script src="https://unpkg.com/vue@3.4.21/dist/vue.global.prod.js"></script>
   
   <!-- Lucide Icons -->
@@ -18,35 +18,27 @@
 
   <style>
     :root {
-      --bg-canvas: #f8fafc;
-      --bg-surface: #ffffff;
-      --bg-surface-elevated: #ffffff;
-      --bg-subtle: #f1f5f9;
-      --border-light: #e2e8f0;
-      --border-focus: #3b82f6;
-      --text-main: #0f172a;
-      --text-secondary: #475569;
-      --text-muted: #94a3b8;
-      --primary: #2563eb;
-      --primary-light: #eff6ff;
-      --primary-border: #bfdbfe;
-      --success: #059669;
-      --success-light: #ecfdf5;
-      --success-border: #a7f3d0;
-      --warning: #d97706;
-      --warning-light: #fffbeb;
-      --warning-border: #fde68a;
-      --danger: #dc2626;
-      --danger-light: #fef2f2;
-      --danger-border: #fecaca;
-      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
-      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
-      --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
-      --radius-sm: 8px;
-      --radius-md: 14px;
-      --radius-lg: 20px;
-      --radius-xl: 28px;
+      --bg-page: #f8fafc;
+      --card-bg: #ffffff;
+      --card-border: #e2e8f0;
+      --text-heading: #0f172a;
+      --text-body: #334155;
+      --text-muted: #64748b;
+      --accent-blue: #2563eb;
+      --accent-blue-light: #eff6ff;
+      --accent-emerald: #059669;
+      --accent-emerald-light: #ecfdf5;
+      --accent-amber: #d97706;
+      --accent-amber-light: #fffbeb;
+      --accent-purple: #7c3aed;
+      --accent-purple-light: #f5f3ff;
+      --accent-rose: #e11d48;
+      --shadow-subtle: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+      --shadow-card: 0 20px 35px -8px rgba(15, 23, 42, 0.06), 0 4px 6px -2px rgba(15, 23, 42, 0.02);
+      --radius-sm: 10px;
+      --radius-md: 16px;
+      --radius-lg: 24px;
+      --radius-full: 9999px;
     }
 
     * {
@@ -59,213 +51,282 @@
 
     body {
       font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 50%, #f1f5f9 100%);
-      color: var(--text-main);
+      background: radial-gradient(circle at 50% 0%, #ffffff 0%, #f1f5f9 100%);
+      color: var(--text-body);
       min-height: 100vh;
-      overflow-x: hidden;
       display: flex;
       flex-direction: column;
+      overflow-x: hidden;
     }
 
-    /* Top Navigation Bar */
+    /* Ambient Glow Behind App */
+    .ambient-glow {
+      position: fixed;
+      top: -120px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 700px;
+      height: 350px;
+      background: radial-gradient(circle, rgba(37, 99, 235, 0.07) 0%, rgba(5, 150, 105, 0.04) 50%, transparent 80%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Minimalist Top App Bar */
     header {
-      background: rgba(255, 255, 255, 0.88);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border-bottom: 1px solid var(--border-light);
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      padding: 12px 20px;
-      box-shadow: var(--shadow-sm);
-    }
-
-    .nav-container {
-      max-width: 1200px;
+      position: relative;
+      z-index: 10;
+      max-width: 1140px;
+      width: 100%;
       margin: 0 auto;
+      padding: 16px 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
 
-    .brand-wrap {
+    .brand-group {
       display: flex;
       align-items: center;
       gap: 12px;
     }
 
-    .brand-logo-icon {
-      width: 42px;
-      height: 42px;
-      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    .brand-mark {
+      width: 44px;
+      height: 44px;
       border-radius: var(--radius-md);
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      color: #ffffff;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #ffffff;
-      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
     }
 
     .brand-title {
       font-family: 'Outfit', sans-serif;
-      font-size: 1.15rem;
       font-weight: 700;
+      font-size: 1.25rem;
       letter-spacing: -0.02em;
-      color: var(--text-main);
+      color: var(--text-heading);
       display: flex;
       align-items: center;
       gap: 8px;
     }
 
-    .brand-subtitle {
+    .smart-ai-badge {
+      background: linear-gradient(135deg, #eff6ff, #f0fdf4);
+      border: 1px solid #bfdbfe;
+      color: var(--accent-blue);
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .header-time-box {
+      text-align: right;
+    }
+
+    .clock-display {
+      font-family: 'Outfit', monospace;
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: var(--text-heading);
+      letter-spacing: 0.02em;
+    }
+
+    .date-display {
       font-size: 0.76rem;
-      color: var(--text-secondary);
+      color: var(--text-muted);
       font-weight: 500;
     }
 
-    .badge-anti-fake-header {
-      background: var(--success-light);
-      color: var(--success);
-      border: 1px solid var(--success-border);
-      padding: 4px 10px;
-      border-radius: 999px;
-      font-size: 0.72rem;
-      font-weight: 700;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
+    /* Main Container */
+    main {
+      position: relative;
+      z-index: 10;
+      max-width: 1140px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      flex: 1;
     }
 
-    .nav-actions {
+    /* Creative Section 1: Dynamic Shift Rhythm & Pulse Ribbon */
+    .shift-ribbon-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 16px 24px;
+      box-shadow: var(--shadow-subtle);
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 24px;
+      align-items: center;
+    }
+
+    @media (max-width: 768px) {
+      .shift-ribbon-card {
+        grid-template-columns: 1fr;
+        gap: 14px;
+        padding: 16px;
+      }
+    }
+
+    .current-zone-pill {
       display: flex;
       align-items: center;
       gap: 10px;
     }
 
-    .nav-btn {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-light);
-      color: var(--text-secondary);
-      padding: 8px 14px;
-      border-radius: var(--radius-sm);
-      font-size: 0.85rem;
+    .zone-indicator-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      position: relative;
+    }
+
+    .zone-indicator-dot::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 2px solid currentColor;
+      opacity: 0.4;
+      animation: ripple 2s infinite;
+    }
+
+    @keyframes ripple {
+      0% { transform: scale(0.9); opacity: 0.8; }
+      100% { transform: scale(1.6); opacity: 0; }
+    }
+
+    .zone-label-sub {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+
+    .zone-label-main {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-heading);
+    }
+
+    /* Shift Timeline Bar */
+    .timeline-track-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .timeline-track {
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: var(--radius-full);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .timeline-progress {
+      height: 100%;
+      border-radius: var(--radius-full);
+      background: linear-gradient(90deg, #10b981, #2563eb, #8b5cf6);
+      transition: width 0.5s ease;
+    }
+
+    .timeline-milestones {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.7rem;
       font-weight: 600;
-      cursor: pointer;
+      color: var(--text-muted);
+    }
+
+    .milestone.active {
+      color: var(--accent-blue);
+      font-weight: 700;
+    }
+
+    /* Team Energy Ring */
+    .presence-widget {
       display: flex;
       align-items: center;
-      gap: 6px;
-      transition: all 0.2s ease;
-      box-shadow: var(--shadow-sm);
+      gap: 12px;
     }
 
-    .nav-btn:hover {
-      background: var(--bg-subtle);
-      color: var(--text-main);
-      border-color: #cbd5e1;
+    .presence-circle {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--accent-emerald-light);
+      border: 2px solid #a7f3d0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-emerald);
+      font-weight: 800;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.95rem;
     }
 
-    .nav-btn-primary {
-      background: var(--primary);
-      color: #ffffff;
-      border-color: var(--primary);
-      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+    .presence-text-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-heading);
     }
 
-    .nav-btn-primary:hover {
-      background: #1d4ed8;
-      color: #ffffff;
+    .presence-text-sub {
+      font-size: 0.72rem;
+      color: var(--text-muted);
     }
 
-    /* Main Grid Layout */
-    main {
-      flex: 1;
-      max-width: 1200px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 20px;
+    /* Main Grid: Biometric Viewfinder + Keypad */
+    .terminal-grid {
       display: grid;
-      grid-template-columns: 1fr 420px;
-      gap: 24px;
-      align-items: start;
+      grid-template-columns: 1fr 390px;
+      gap: 22px;
+      align-items: stretch;
     }
 
-    @media (max-width: 960px) {
-      main {
+    @media (max-width: 900px) {
+      .terminal-grid {
         grid-template-columns: 1fr;
-        padding: 16px;
-        gap: 18px;
       }
     }
 
-    /* Card Panels */
-    .card {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-light);
+    /* Camera Terminal Viewport */
+    .camera-pod {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
       border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-md);
+      box-shadow: var(--shadow-card);
       overflow: hidden;
-      position: relative;
-    }
-
-    /* Camera Viewport Section */
-    .camera-card {
       display: flex;
       flex-direction: column;
-    }
-
-    .camera-header {
-      padding: 14px 20px;
-      border-bottom: 1px solid var(--border-light);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: #fafafa;
-    }
-
-    .live-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: var(--text-main);
-      background: #ffffff;
-      padding: 4px 12px;
-      border-radius: 999px;
-      border: 1px solid var(--border-light);
-      box-shadow: var(--shadow-sm);
-    }
-
-    .pulse-dot {
-      width: 8px;
-      height: 8px;
-      background: var(--success);
-      border-radius: 50%;
-      animation: pulseGreen 1.8s infinite;
-    }
-
-    @keyframes pulseGreen {
-      0% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.7); }
-      70% { box-shadow: 0 0 0 8px rgba(5, 150, 105, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0); }
-    }
-
-    .camera-viewport-wrap {
       position: relative;
-      background: #0f172a;
+    }
+
+    .camera-frame {
+      position: relative;
       width: 100%;
-      aspect-ratio: 4 / 3;
-      max-height: 480px;
+      height: 100%;
+      min-height: 440px;
+      background: #0f172a;
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
-    }
-
-    @media (max-width: 600px) {
-      .camera-viewport-wrap {
-        aspect-ratio: 1 / 1;
-      }
     }
 
     #camera-video, #canvas-snap {
@@ -275,218 +336,181 @@
       transform: scaleX(-1);
     }
 
-    .camera-flip-btn {
+    /* Camera Overlays */
+    .cam-top-hud {
       position: absolute;
-      top: 14px;
-      right: 14px;
-      background: rgba(255, 255, 255, 0.9);
-      border: 1px solid rgba(255, 255, 255, 0.4);
-      color: var(--text-main);
+      top: 16px;
+      left: 16px;
+      right: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 15;
+    }
+
+    .hud-chip {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      color: #ffffff;
+      padding: 6px 12px;
+      border-radius: var(--radius-full);
+      font-size: 0.72rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      letter-spacing: 0.04em;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .cam-flip-btn {
       width: 38px;
       height: 38px;
       border-radius: 50%;
+      background: rgba(255, 255, 255, 0.9);
+      border: none;
+      color: var(--text-heading);
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      z-index: 15;
       backdrop-filter: blur(8px);
-      box-shadow: var(--shadow-md);
-      transition: all 0.2s ease;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      transition: transform 0.2s ease;
     }
 
-    .camera-flip-btn:hover {
+    .cam-flip-btn:hover {
       transform: rotate(180deg);
-      background: #ffffff;
     }
 
-    /* Face Reticle Overlay */
-    .face-reticle {
+    /* Biometric Oval Face Reticle */
+    .biometric-reticle {
       position: absolute;
-      width: 230px;
-      height: 290px;
-      border: 2px dashed rgba(255, 255, 255, 0.45);
+      width: 220px;
+      height: 280px;
       border-radius: 50% 50% 48% 48%;
+      border: 2px dashed rgba(255, 255, 255, 0.5);
       pointer-events: none;
       z-index: 10;
-      box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.25);
+      box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.35);
+      transition: all 0.3s ease;
     }
 
-    .face-reticle::before {
+    .biometric-reticle.first-time-mode {
+      border-color: #818cf8;
+      box-shadow: 0 0 0 9999px rgba(30, 27, 75, 0.5);
+    }
+
+    .biometric-reticle::after {
       content: '';
       position: absolute;
       top: 0;
       left: 10%;
       right: 10%;
       height: 2px;
-      background: linear-gradient(90deg, transparent, #10b981, transparent);
-      box-shadow: 0 0 12px #10b981;
-      animation: scanSweep 2.2s ease-in-out infinite alternate;
+      background: linear-gradient(90deg, transparent, #38bdf8, transparent);
+      box-shadow: 0 0 10px #38bdf8;
+      animation: radarScan 2.2s infinite ease-in-out alternate;
     }
 
-    @keyframes scanSweep {
-      0% { top: 5%; opacity: 0.3; }
+    @keyframes radarScan {
+      0% { top: 6%; opacity: 0.2; }
       50% { opacity: 1; }
-      100% { top: 90%; opacity: 0.3; }
+      100% { top: 92%; opacity: 0.2; }
     }
 
     .reticle-corner {
       position: absolute;
-      width: 22px;
-      height: 22px;
-      border-color: #10b981;
+      width: 20px;
+      height: 20px;
+      border-color: #38bdf8;
       border-style: solid;
     }
-    .rc-tl { top: -2px; left: -2px; border-width: 3px 0 0 3px; border-top-left-radius: 20px; }
-    .rc-tr { top: -2px; right: -2px; border-width: 3px 3px 0 0; border-top-right-radius: 20px; }
-    .rc-bl { bottom: -2px; left: -2px; border-width: 0 0 3px 3px; border-bottom-left-radius: 20px; }
-    .rc-br { bottom: -2px; right: -2px; border-width: 0 3px 3px 0; border-bottom-right-radius: 20px; }
+    .c-tl { top: -2px; left: -2px; border-width: 3px 0 0 3px; border-top-left-radius: 16px; }
+    .c-tr { top: -2px; right: -2px; border-width: 3px 3px 0 0; border-top-right-radius: 16px; }
+    .c-bl { bottom: -2px; left: -2px; border-width: 0 0 3px 3px; border-bottom-left-radius: 16px; }
+    .c-br { bottom: -2px; right: -2px; border-width: 0 3px 3px 0; border-bottom-right-radius: 16px; }
 
-    .reticle-label {
+    .reticle-status-text {
       position: absolute;
-      bottom: -32px;
+      bottom: -34px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(15, 23, 42, 0.75);
+      background: rgba(15, 23, 42, 0.85);
       color: #ffffff;
       padding: 3px 12px;
-      border-radius: 999px;
+      border-radius: var(--radius-full);
       font-size: 0.72rem;
       font-weight: 600;
-      letter-spacing: 0.04em;
       white-space: nowrap;
-      backdrop-filter: blur(4px);
+      letter-spacing: 0.04em;
     }
 
-    .camera-offline-wrap {
-      position: absolute;
-      inset: 0;
-      background: #f8fafc;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      color: var(--text-secondary);
-      padding: 20px;
-      text-align: center;
-      z-index: 12;
-    }
-
-    /* Mode Selection Tabs (Check In / Check Out) */
-    .mode-selector {
-      padding: 14px 20px;
-      background: var(--bg-surface);
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      border-top: 1px solid var(--border-light);
-    }
-
-    .mode-btn {
-      padding: 10px 8px;
-      border-radius: var(--radius-md);
-      border: 1.5px solid var(--border-light);
-      background: var(--bg-surface);
-      color: var(--text-secondary);
-      font-weight: 700;
-      font-size: 0.84rem;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      transition: all 0.2s ease;
-    }
-
-    .mode-btn:hover {
-      background: var(--bg-subtle);
-      border-color: #cbd5e1;
-    }
-
-    .mode-btn.active-in {
-      background: var(--success-light);
-      border-color: var(--success);
-      color: var(--success);
-      box-shadow: 0 2px 8px rgba(5, 150, 105, 0.15);
-    }
-
-    .mode-btn.active-out {
-      background: var(--warning-light);
-      border-color: var(--warning);
-      color: var(--warning);
-      box-shadow: 0 2px 8px rgba(217, 119, 6, 0.15);
-    }
-
-    .mode-btn.active-auto {
-      background: var(--primary-light);
-      border-color: var(--primary);
-      color: var(--primary);
-      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15);
-    }
-
-    /* Keypad & PIN Panel */
-    .keypad-card {
+    /* Keypad Card */
+    .keypad-pod {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
       padding: 24px;
+      box-shadow: var(--shadow-card);
       display: flex;
       flex-direction: column;
-      gap: 18px;
+      justify-content: space-between;
+      gap: 16px;
     }
 
-    .pin-header {
+    .keypad-header {
       text-align: center;
     }
 
-    .pin-title {
+    .keypad-title {
       font-family: 'Outfit', sans-serif;
-      font-size: 1.25rem;
+      font-size: 1.3rem;
       font-weight: 700;
-      color: var(--text-main);
+      color: var(--text-heading);
     }
 
-    .pin-subtitle {
-      font-size: 0.8rem;
-      color: var(--text-secondary);
-      margin-top: 3px;
+    .keypad-subtitle {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 2px;
     }
 
-    /* PIN Indicator Circles */
-    .pin-indicator-row {
+    /* PIN Code Indicator Circles */
+    .pin-display-row {
       display: flex;
       justify-content: center;
-      gap: 16px;
-      margin: 6px 0;
+      gap: 14px;
+      margin: 4px 0;
     }
 
-    .pin-dot {
-      width: 22px;
-      height: 22px;
+    .pin-circle {
+      width: 20px;
+      height: 20px;
       border-radius: 50%;
-      border: 2px solid var(--border-light);
-      background: var(--bg-subtle);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      background: #f1f5f9;
+      border: 2px solid #cbd5e1;
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
-    .pin-dot.filled {
-      border-color: var(--primary);
-      background: var(--primary);
+    .pin-circle.filled {
+      background: var(--accent-blue);
+      border-color: var(--accent-blue);
       transform: scale(1.15);
-      box-shadow: 0 0 10px rgba(37, 99, 235, 0.4);
+      box-shadow: 0 0 10px rgba(37, 99, 235, 0.35);
     }
 
-    /* Instant Profile Recognition Card */
+    /* Recognized Employee Banner (Appears dynamically) */
     .recognized-banner {
-      background: var(--primary-light);
-      border: 1px solid var(--primary-border);
+      background: #f8fafc;
+      border: 1.5px solid var(--card-border);
       border-radius: var(--radius-md);
       padding: 10px 14px;
       display: flex;
       align-items: center;
       gap: 12px;
-      animation: slideInDown 0.3s ease;
+      animation: slideInDown 0.25s ease;
     }
 
     @keyframes slideInDown {
@@ -494,59 +518,37 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .recognized-avatar-wrap {
-      position: relative;
-      width: 48px;
-      height: 48px;
+    .recognized-avatar {
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
-      overflow: hidden;
-      border: 2px solid #ffffff;
-      box-shadow: var(--shadow-sm);
-      flex-shrink: 0;
-      background: #e2e8f0;
-    }
-
-    .recognized-avatar-wrap img {
-      width: 100%;
-      height: 100%;
       object-fit: cover;
+      border: 2px solid #ffffff;
+      box-shadow: var(--shadow-subtle);
+      background: #e2e8f0;
+      flex-shrink: 0;
     }
 
-    .recognized-info {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .recognized-name {
+    .recognized-text-name {
       font-weight: 700;
       font-size: 0.92rem;
-      color: var(--text-main);
+      color: var(--text-heading);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
-    .recognized-dept {
-      font-size: 0.74rem;
-      color: var(--text-secondary);
-    }
-
-    .ref-badge {
-      display: inline-flex;
+    .recognized-text-shift {
+      font-size: 0.72rem;
+      font-weight: 600;
+      display: flex;
       align-items: center;
-      gap: 4px;
-      font-size: 0.68rem;
-      font-weight: 700;
-      color: var(--success);
-      background: var(--success-light);
-      border: 1px solid var(--success-border);
-      padding: 2px 6px;
-      border-radius: 4px;
+      gap: 6px;
       margin-top: 2px;
     }
 
-    /* Keypad Grid */
-    .keypad-grid {
+    /* Tactile 3x4 Keypad */
+    .key-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 10px;
@@ -554,70 +556,68 @@
 
     .key-btn {
       aspect-ratio: 1.35;
-      background: var(--bg-surface);
-      border: 1.5px solid var(--border-light);
+      background: #ffffff;
+      border: 1.5px solid var(--card-border);
       border-radius: var(--radius-md);
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+      box-shadow: 0 2px 4px rgba(15, 23, 42, 0.03);
       cursor: pointer;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       transition: all 0.12s ease;
-      color: var(--text-main);
+      color: var(--text-heading);
     }
 
     .key-btn:hover {
-      background: var(--bg-subtle);
+      background: #f8fafc;
       border-color: #cbd5e1;
     }
 
     .key-btn:active {
-      transform: scale(0.95);
+      transform: scale(0.96);
       background: #e2e8f0;
     }
 
-    .key-number {
+    .key-num {
       font-family: 'Outfit', sans-serif;
-      font-size: 1.55rem;
+      font-size: 1.5rem;
       font-weight: 700;
       line-height: 1;
-      color: var(--text-main);
     }
 
-    .key-alpha {
-      font-size: 0.65rem;
+    .key-sub {
+      font-size: 0.62rem;
       font-weight: 600;
       color: var(--text-muted);
       letter-spacing: 0.12em;
       margin-top: 3px;
     }
 
-    .key-action {
-      background: var(--bg-subtle);
-      border-color: var(--border-light);
-      color: var(--text-secondary);
+    .key-util {
+      background: #f8fafc;
+      color: var(--text-muted);
     }
 
-    .key-clear:active {
-      background: var(--danger-light);
-      color: var(--danger);
-      border-color: var(--danger-border);
+    .key-util:active {
+      color: var(--accent-rose);
+      background: #fff1f2;
     }
 
-    /* Submit Punch Button */
-    .punch-action-btn {
+    /* Action Trigger Button */
+    .action-punch-btn {
       width: 100%;
       padding: 14px;
-      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      background: linear-gradient(135deg, #1e293b, #0f172a);
       color: #ffffff;
       border: none;
       border-radius: var(--radius-md);
       font-family: 'Outfit', sans-serif;
-      font-size: 1.05rem;
+      font-size: 1rem;
       font-weight: 700;
+      letter-spacing: 0.02em;
       cursor: pointer;
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.2);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -625,133 +625,27 @@
       transition: all 0.2s ease;
     }
 
-    .punch-action-btn:hover:not(:disabled) {
-      background: linear-gradient(135deg, #1d4ed8, #1e40af);
+    .action-punch-btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, #0f172a, #020617);
       transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
     }
 
-    .punch-action-btn:active:not(:disabled) {
-      transform: translateY(1px);
-    }
-
-    .punch-action-btn:disabled {
-      opacity: 0.55;
+    .action-punch-btn:disabled {
+      opacity: 0.5;
       cursor: not-allowed;
-      filter: grayscale(0.4);
     }
 
-    /* Recent Live Feed Card (Bottom / Slide) */
-    .activity-section {
-      grid-column: 1 / -1;
-      margin-top: 6px;
-    }
-
-    .feed-header {
-      padding: 14px 20px;
-      border-bottom: 1px solid var(--border-light);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: #fafafa;
-    }
-
-    .feed-title {
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: var(--text-main);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .feed-grid {
-      padding: 16px;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 12px;
-    }
-
-    .feed-item {
-      background: var(--bg-subtle);
-      border: 1px solid var(--border-light);
-      border-radius: var(--radius-md);
-      padding: 12px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      transition: transform 0.15s ease;
-    }
-
-    .feed-item:hover {
-      transform: translateY(-2px);
-      border-color: #cbd5e1;
-      box-shadow: var(--shadow-sm);
-    }
-
-    .feed-avatar {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid #ffffff;
-      box-shadow: var(--shadow-sm);
-    }
-
-    .feed-content {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .feed-name {
-      font-weight: 700;
-      font-size: 0.86rem;
-      color: var(--text-main);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .feed-meta {
-      font-size: 0.72rem;
-      color: var(--text-secondary);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-top: 2px;
-    }
-
-    .feed-badge-in {
-      background: var(--success-light);
-      color: var(--success);
-      font-weight: 700;
-      padding: 1px 6px;
-      border-radius: 4px;
-      font-size: 0.65rem;
-      border: 1px solid var(--success-border);
-    }
-
-    .feed-badge-out {
-      background: var(--warning-light);
-      color: var(--warning);
-      font-weight: 700;
-      padding: 1px 6px;
-      border-radius: 4px;
-      font-size: 0.65rem;
-      border: 1px solid var(--warning-border);
-    }
-
-    /* Modal Backdrop & Dialog (Pure Light Theme) */
-    .modal-overlay {
+    /* First Time Registration Modal / Step */
+    .modal-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(15, 23, 42, 0.45);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
+      background: rgba(15, 23, 42, 0.55);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 100;
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 100;
       padding: 16px;
       animation: fadeIn 0.2s ease;
     }
@@ -761,17 +655,14 @@
       to { opacity: 1; }
     }
 
-    .modal-card {
+    .modal-box {
       background: #ffffff;
-      border-radius: var(--radius-xl);
-      box-shadow: var(--shadow-xl);
-      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
       width: 100%;
-      max-width: 580px;
-      max-height: 90vh;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
+      max-width: 520px;
+      box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+      border: 1px solid var(--card-border);
+      overflow: hidden;
       animation: scaleUp 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
@@ -780,227 +671,89 @@
       to { transform: scale(1); opacity: 1; }
     }
 
-    .modal-header {
+    .modal-inner-header {
       padding: 18px 24px;
-      border-bottom: 1px solid var(--border-light);
+      border-bottom: 1px solid var(--card-border);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      position: sticky;
-      top: 0;
-      background: #ffffff;
-      z-index: 5;
     }
 
-    .modal-title {
-      font-family: 'Outfit', sans-serif;
-      font-size: 1.2rem;
-      font-weight: 700;
-      color: var(--text-main);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .modal-close-btn {
-      background: var(--bg-subtle);
-      border: 1px solid var(--border-light);
-      color: var(--text-secondary);
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-    }
-
-    .modal-close-btn:hover {
-      background: #e2e8f0;
-      color: var(--text-main);
-    }
-
-    .modal-body {
+    .modal-inner-body {
       padding: 24px;
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 18px;
     }
 
-    /* Anti-Fake Dual Comparison Card (Success Modal) */
-    .anti-fake-comparison-grid {
+    /* Anti-Fake Comparison Card (Success Modal) */
+    .anti-fake-side-by-side {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 16px;
+      gap: 14px;
       background: #f8fafc;
-      border: 1.5px solid var(--border-light);
-      border-radius: var(--radius-lg);
-      padding: 16px;
+      border: 1.5px solid var(--card-border);
+      border-radius: var(--radius-md);
+      padding: 14px;
     }
 
-    .comparison-col {
+    .photo-col {
       display: flex;
       flex-direction: column;
       align-items: center;
       text-align: center;
-      gap: 8px;
+      gap: 6px;
     }
 
-    .comparison-tag {
-      font-size: 0.72rem;
+    .photo-tag {
+      font-size: 0.68rem;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.04em;
-      padding: 3px 8px;
-      border-radius: 999px;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
     }
 
     .tag-live {
-      background: var(--primary-light);
-      color: var(--primary);
-      border: 1px solid var(--primary-border);
+      background: var(--accent-blue-light);
+      color: var(--accent-blue);
+      border: 1px solid #bfdbfe;
     }
 
-    .tag-admin {
-      background: var(--success-light);
-      color: var(--success);
-      border: 1px solid var(--success-border);
+    .tag-ref {
+      background: var(--accent-emerald-light);
+      color: var(--accent-emerald);
+      border: 1px solid #a7f3d0;
     }
 
-    .comparison-photo-wrap {
+    .photo-thumb-wrap {
       width: 100%;
       aspect-ratio: 1;
-      border-radius: var(--radius-md);
+      border-radius: var(--radius-sm);
       overflow: hidden;
       border: 2px solid #ffffff;
-      box-shadow: var(--shadow-md);
+      box-shadow: var(--shadow-subtle);
       background: #e2e8f0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
 
-    .comparison-photo-wrap img {
+    .photo-thumb-wrap img {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
 
-    .audit-verdict-box {
-      background: var(--success-light);
-      border: 1.5px solid var(--success-border);
+    .audit-stamp-box {
+      background: var(--accent-emerald-light);
+      border: 1.5px solid #a7f3d0;
       border-radius: var(--radius-md);
-      padding: 12px 16px;
+      padding: 12px 14px;
       display: flex;
       align-items: center;
       gap: 12px;
-      color: var(--success);
+      color: var(--accent-emerald);
     }
 
-    .audit-verdict-text {
-      font-size: 0.85rem;
-      font-weight: 700;
-    }
-
-    /* Admin Management Tabs */
-    .admin-nav-tabs {
-      display: flex;
-      border-bottom: 1px solid var(--border-light);
-      gap: 8px;
-      padding: 0 24px;
-      background: #fafafa;
-    }
-
-    .admin-tab-btn {
-      padding: 12px 16px;
-      border: none;
-      background: transparent;
-      color: var(--text-secondary);
-      font-weight: 600;
-      font-size: 0.86rem;
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .admin-tab-btn.active {
-      color: var(--primary);
-      border-bottom-color: var(--primary);
-      font-weight: 700;
-    }
-
-    /* Reference Image Upload & Preview in Admin */
-    .ref-upload-dropzone {
-      border: 2px dashed var(--border-light);
-      border-radius: var(--radius-md);
-      padding: 20px;
-      text-align: center;
-      background: #f8fafc;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .ref-upload-dropzone:hover {
-      border-color: var(--primary);
-      background: var(--primary-light);
-    }
-
-    .admin-ref-preview-wrap {
-      width: 140px;
-      height: 140px;
-      border-radius: var(--radius-lg);
-      overflow: hidden;
-      border: 3px solid #ffffff;
-      box-shadow: var(--shadow-md);
-      margin: 0 auto;
-      background: #e2e8f0;
-      position: relative;
-    }
-
-    .admin-ref-preview-wrap img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    /* Form Fields */
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .form-label {
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: var(--text-secondary);
-    }
-
-    .form-input, .form-select {
-      padding: 10px 14px;
-      border: 1px solid var(--border-light);
-      border-radius: var(--radius-sm);
-      font-size: 0.92rem;
-      font-family: inherit;
-      color: var(--text-main);
-      background: #ffffff;
-      outline: none;
-      transition: border-color 0.15s ease;
-    }
-
-    .form-input:focus, .form-select:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-    }
-
-    /* Toast Notification */
-    .toast-msg {
+    /* Toast */
+    .kiosk-toast {
       position: fixed;
       bottom: 24px;
       left: 50%;
@@ -1008,500 +761,388 @@
       background: #0f172a;
       color: #ffffff;
       padding: 12px 24px;
-      border-radius: 999px;
+      border-radius: var(--radius-full);
       font-size: 0.88rem;
       font-weight: 600;
-      box-shadow: var(--shadow-xl);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
       z-index: 200;
       display: flex;
       align-items: center;
       gap: 8px;
-      animation: toastIn 0.25s ease;
-    }
-
-    @keyframes toastIn {
-      from { opacity: 0; transform: translate(-50%, 15px); }
-      to { opacity: 1; transform: translate(-50%, 0); }
     }
   </style>
 </head>
 <body>
 {% raw %}
   <div id="app">
-    <!-- Top Header -->
-    <header>
-      <div class="nav-container">
-        <div class="brand-wrap">
-          <div class="brand-logo-icon">
-            <i data-lucide="scan-face" style="width: 24px; height: 24px;"></i>
-          </div>
-          <div>
-            <div class="brand-title">
-              {{ kioskTitle }}
-              <span class="badge-anti-fake-header">
-                <i data-lucide="shield-check" style="width: 14px; height: 14px;"></i> Anti-Fake Audit
-              </span>
-            </div>
-            <div class="brand-subtitle">{{ company || 'Enterprise Attendance Kiosk' }} &bull; {{ currentTimeStr }}</div>
-          </div>
-        </div>
+    <div class="ambient-glow"></div>
 
-        <div class="nav-actions">
-          <button class="nav-btn" @click="openAdminModal">
-            <i data-lucide="user-cog" style="width: 16px; height: 16px;"></i> Admin & Reference Photo
-          </button>
-          <a href="/app/face-attendance" class="nav-btn nav-btn-primary" target="_top">
-            <i data-lucide="layout-dashboard" style="width: 16px; height: 16px;"></i> Desk
-          </a>
+    <!-- Header Bar -->
+    <header>
+      <div class="brand-group">
+        <div class="brand-mark">
+          <i data-lucide="scan-face" style="width: 24px; height: 24px;"></i>
         </div>
+        <div>
+          <div class="brand-title">
+            {{ kioskTitle }}
+            <span class="smart-ai-badge">
+              <i data-lucide="sparkles" style="width: 12px; height: 12px;"></i> Auto Timing Engine
+            </span>
+          </div>
+          <span style="font-size: 0.74rem; color: var(--text-muted);">
+            {{ config.greeting || 'Zero-Touch Biometric Attendance' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="header-time-box">
+        <div class="clock-display">{{ currentTimeStr }}</div>
+        <div class="date-display">{{ currentDateStr }}</div>
       </div>
     </header>
 
-    <!-- Main Content Area -->
+    <!-- Main Content -->
     <main>
-      <!-- LEFT: Live Camera Section -->
-      <section class="card camera-card">
-        <div class="camera-header">
-          <div class="live-chip">
-            <span class="pulse-dot"></span>
-            <span>LIVE CAMERA SCAN</span>
-          </div>
-          <span style="font-size: 0.78rem; font-weight: 600; color: var(--text-secondary);">
-            Align face inside frame
-          </span>
-        </div>
-
-        <div class="camera-viewport-wrap">
-          <video id="camera-video" autoplay playsinline muted></video>
-          <canvas id="canvas-snap" style="display: none;"></canvas>
-
-          <!-- Camera Flip Switch -->
-          <button class="camera-flip-btn" @click="toggleCameraFacing" title="Flip Camera">
-            <i data-lucide="refresh-cw" style="width: 18px; height: 18px;"></i>
-          </button>
-
-          <!-- Face Focus Reticle with Corner Brackets -->
-          <div class="face-reticle">
-            <div class="reticle-corner rc-tl"></div>
-            <div class="reticle-corner rc-tr"></div>
-            <div class="reticle-corner rc-bl"></div>
-            <div class="reticle-corner rc-br"></div>
-            <div class="reticle-label">LOOK HERE &bull; ANTI-FAKE SCAN</div>
-          </div>
-
-          <!-- Offline / Permission Notice -->
-          <div v-if="cameraError" class="camera-offline-wrap">
-            <i data-lucide="camera-off" style="width: 44px; height: 44px; color: var(--danger);"></i>
-            <div style="font-weight: 700; color: var(--text-main);">Camera Unavailable</div>
-            <p style="font-size: 0.8rem; max-width: 320px;">{{ cameraError }}</p>
-            <button class="nav-btn nav-btn-primary" @click="initCamera">Retry Camera Access</button>
+      <!-- CREATIVE SHIFT TIMELINE & WORKPLACE PULSE RIBBON -->
+      <section class="shift-ribbon-card">
+        <!-- Current Zone Indicator -->
+        <div class="current-zone-pill">
+          <div class="zone-indicator-dot" :style="{ color: getZoneColorHex(config.zone_color), backgroundColor: getZoneColorHex(config.zone_color) }"></div>
+          <div>
+            <div class="zone-label-sub">CURRENT SHIFT WINDOW</div>
+            <div class="zone-label-main">{{ config.current_zone || 'Regular Shift Active' }}</div>
           </div>
         </div>
 
-        <!-- Mode Selection Tabs -->
-        <div class="mode-selector">
-          <button 
-            class="mode-btn" 
-            :class="{ 'active-in': selectedMode === 'IN' }"
-            @click="setMode('IN')">
-            <i data-lucide="log-in" style="width: 18px; height: 18px;"></i>
-            <span>CHECK IN</span>
-          </button>
-          <button 
-            class="mode-btn" 
-            :class="{ 'active-out': selectedMode === 'OUT' }"
-            @click="setMode('OUT')">
-            <i data-lucide="log-out" style="width: 18px; height: 18px;"></i>
-            <span>CHECK OUT</span>
-          </button>
-          <button 
-            class="mode-btn" 
-            :class="{ 'active-auto': selectedMode === 'Auto Detect' }"
-            @click="setMode('Auto Detect')">
-            <i data-lucide="sparkles" style="width: 18px; height: 18px;"></i>
-            <span>AUTO DETECT</span>
-          </button>
+        <!-- Shift Timeline Bar -->
+        <div class="timeline-track-wrap">
+          <div class="timeline-track">
+            <div class="timeline-progress" :style="{ width: getShiftProgressPercent() + '%' }"></div>
+          </div>
+          <div class="timeline-milestones">
+            <span class="milestone" :class="{ active: currentHour < 10.5 }">09:00 Regular Day</span>
+            <span class="milestone" :class="{ active: currentHour >= 10.5 && currentHour < 13.5 }">10:30 Half Day</span>
+            <span class="milestone" :class="{ active: currentHour >= 13.5 && currentHour < 17 }">13:30 Core Shift</span>
+            <span class="milestone" :class="{ active: currentHour >= 17 && currentHour < 19 }">17:00 Standard Exit</span>
+            <span class="milestone" :class="{ active: currentHour >= 19 }">19:00+ Overtime</span>
+          </div>
+        </div>
+
+        <!-- Live Workplace Pulse Ring -->
+        <div class="presence-widget">
+          <div class="presence-circle">
+            {{ config.presence_pct || 100 }}%
+          </div>
+          <div>
+            <div class="presence-text-title">Office Presence Pulse</div>
+            <div class="presence-text-sub">Shift Punctuality Optimal</div>
+          </div>
         </div>
       </section>
 
-      <!-- RIGHT: Tactile PIN Keypad Section -->
-      <section class="card keypad-card">
-        <div class="pin-header">
-          <div class="pin-title">Enter Secret PIN</div>
-          <div class="pin-subtitle">Type your 4-digit code while facing the camera</div>
-        </div>
+      <!-- TERMINAL WORKSPACE: CAMERA VIEWPORT & TACTILE KEYPAD -->
+      <div class="terminal-grid">
+        <!-- LEFT: Biometric Camera Viewport -->
+        <section class="camera-pod">
+          <div class="camera-frame">
+            <video id="camera-video" autoplay playsinline muted></video>
+            <canvas id="canvas-snap" style="display: none;"></canvas>
 
-        <!-- PIN Dot Indicators -->
-        <div class="pin-indicator-row">
-          <div class="pin-dot" :class="{ filled: pinDigits.length >= 1 }"></div>
-          <div class="pin-dot" :class="{ filled: pinDigits.length >= 2 }"></div>
-          <div class="pin-dot" :class="{ filled: pinDigits.length >= 3 }"></div>
-          <div class="pin-dot" :class="{ filled: pinDigits.length >= 4 }"></div>
-        </div>
-
-        <!-- Instant Employee Preview Banner (shows immediately on 4 digits) -->
-        <div v-if="previewProfile" class="recognized-banner">
-          <div class="recognized-avatar-wrap">
-            <img :src="previewProfile.face_image || '/assets/frappe/images/default-avatar.png'" alt="Reference Photo">
-          </div>
-          <div class="recognized-info">
-            <div class="recognized-name">{{ previewProfile.employee_name }}</div>
-            <div class="recognized-dept">{{ previewProfile.department || previewProfile.designation || 'Verified Employee' }}</div>
-            <div class="ref-badge">
-              <i data-lucide="shield-check" style="width: 12px; height: 12px;"></i> Official Reference On File
+            <!-- Top Viewport HUD -->
+            <div class="cam-top-hud">
+              <div class="hud-chip">
+                <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981;"></span>
+                <span>HD BIOMETRIC SCAN</span>
+              </div>
+              <button class="cam-flip-btn" @click="toggleCameraFacing" title="Flip Camera">
+                <i data-lucide="refresh-cw" style="width: 18px; height: 18px;"></i>
+              </button>
             </div>
-          </div>
-        </div>
 
-        <!-- 3x4 Tactile Keypad -->
-        <div class="keypad-grid">
-          <button class="key-btn" @click="pressKey('1')">
-            <span class="key-number">1</span>
-            <span class="key-alpha"></span>
-          </button>
-          <button class="key-btn" @click="pressKey('2')">
-            <span class="key-number">2</span>
-            <span class="key-alpha">ABC</span>
-          </button>
-          <button class="key-btn" @click="pressKey('3')">
-            <span class="key-number">3</span>
-            <span class="key-alpha">DEF</span>
-          </button>
-          <button class="key-btn" @click="pressKey('4')">
-            <span class="key-number">4</span>
-            <span class="key-alpha">GHI</span>
-          </button>
-          <button class="key-btn" @click="pressKey('5')">
-            <span class="key-number">5</span>
-            <span class="key-alpha">JKL</span>
-          </button>
-          <button class="key-btn" @click="pressKey('6')">
-            <span class="key-number">6</span>
-            <span class="key-alpha">MNO</span>
-          </button>
-          <button class="key-btn" @click="pressKey('7')">
-            <span class="key-number">7</span>
-            <span class="key-alpha">PQRS</span>
-          </button>
-          <button class="key-btn" @click="pressKey('8')">
-            <span class="key-number">8</span>
-            <span class="key-alpha">TUV</span>
-          </button>
-          <button class="key-btn" @click="pressKey('9')">
-            <span class="key-number">9</span>
-            <span class="key-alpha">WXYZ</span>
-          </button>
-          <button class="key-btn key-action key-clear" @click="clearPin" title="Clear PIN">
-            <i data-lucide="delete" style="width: 22px; height: 22px;"></i>
-          </button>
-          <button class="key-btn" @click="pressKey('0')">
-            <span class="key-number">0</span>
-            <span class="key-alpha">+</span>
-          </button>
-          <button class="key-btn key-action" @click="backspacePin" title="Backspace">
-            <i data-lucide="arrow-left" style="width: 22px; height: 22px;"></i>
-          </button>
-        </div>
-
-        <!-- Submit Punch Action Button -->
-        <button 
-          class="punch-action-btn" 
-          :disabled="pinDigits.length !== 4 || isSubmitting"
-          @click="submitAttendance">
-          <i v-if="!isSubmitting" data-lucide="camera" style="width: 20px; height: 20px;"></i>
-          <i v-else data-lucide="loader-2" style="width: 20px; height: 20px; animation: spin 1s linear infinite;"></i>
-          <span>{{ isSubmitting ? 'Verifying Identity...' : 'CONFIRM ATTENDANCE' }}</span>
-        </button>
-      </section>
-
-      <!-- BOTTOM: Today's Live Attendance Feed with Anti-Fake Badges -->
-      <section class="card activity-section">
-        <div class="feed-header">
-          <div class="feed-title">
-            <i data-lucide="history" style="width: 18px; height: 18px; color: var(--primary);"></i>
-            <span>Today's Verified Attendance Feed</span>
-          </div>
-          <button class="nav-btn" style="padding: 4px 10px; font-size: 0.76rem;" @click="fetchRecentFeed">
-            <i data-lucide="refresh-cw" style="width: 13px; height: 13px;"></i> Refresh
-          </button>
-        </div>
-
-        <div class="feed-grid">
-          <div v-for="item in recentFeed" :key="item.name" class="feed-item">
-            <img :src="item.photo_captured || item.reference_photo || '/assets/frappe/images/default-avatar.png'" class="feed-avatar" alt="Avatar">
-            <div class="feed-content">
-              <div class="feed-name">{{ item.employee_name }}</div>
-              <div class="feed-meta">
-                <span :class="item.log_type === 'IN' ? 'feed-badge-in' : 'feed-badge-out'">
-                  {{ item.log_type }}
-                </span>
-                <span>{{ item.time_formatted }}</span>
+            <!-- Oval Face Focus Reticle -->
+            <div class="biometric-reticle" :class="{ 'first-time-mode': isFirstTimePrompt }">
+              <div class="reticle-corner c-tl"></div>
+              <div class="reticle-corner c-tr"></div>
+              <div class="reticle-corner c-bl"></div>
+              <div class="reticle-corner c-br"></div>
+              <div class="reticle-status-text">
+                {{ isFirstTimePrompt ? 'STEP 1: OFFICIAL FACE ENROLLMENT' : 'LOOK STRAIGHT • AUTO ATTENDANCE' }}
               </div>
             </div>
-            <div title="Anti-Fake Verified" style="color: var(--success);">
-              <i data-lucide="shield-check" style="width: 18px; height: 18px;"></i>
+          </div>
+        </section>
+
+        <!-- RIGHT: Tactile 4-Digit PIN Keypad -->
+        <section class="keypad-pod">
+          <div class="keypad-header">
+            <div class="keypad-title">Enter Secret PIN</div>
+            <div class="keypad-subtitle">Type your 4-digit code to complete punch</div>
+          </div>
+
+          <!-- PIN Indicator Dots -->
+          <div class="pin-display-row">
+            <div class="pin-circle" :class="{ filled: pinDigits.length >= 1 }"></div>
+            <div class="pin-circle" :class="{ filled: pinDigits.length >= 2 }"></div>
+            <div class="pin-circle" :class="{ filled: pinDigits.length >= 3 }"></div>
+            <div class="pin-circle" :class="{ filled: pinDigits.length >= 4 }"></div>
+          </div>
+
+          <!-- Instant Recognition Banner (Shows as soon as 4 digits are recognized) -->
+          <div v-if="previewEmployee" class="recognized-banner">
+            <img :src="previewEmployee.face_image || '/assets/frappe/images/default-avatar.png'" class="recognized-avatar" alt="Avatar">
+            <div style="flex: 1; min-width: 0;">
+              <div class="recognized-text-name">{{ previewEmployee.employee_name }}</div>
+              <div class="recognized-text-shift">
+                <span :style="{ color: previewEmployee.auto_log_type === 'IN' ? 'var(--accent-emerald)' : 'var(--accent-amber)' }">
+                  Auto {{ previewEmployee.auto_log_type }}
+                </span>
+                &bull;
+                <span style="color: var(--accent-blue); font-weight: 700;">{{ previewEmployee.timing_module }}</span>
+              </div>
             </div>
           </div>
-          <div v-if="recentFeed.length === 0" style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 24px; font-size: 0.88rem;">
-            No check-ins recorded yet today. Be the first!
+
+          <!-- 3x4 Tactile Keypad -->
+          <div class="key-grid">
+            <button class="key-btn" @click="pressKey('1')">
+              <span class="key-num">1</span>
+              <span class="key-sub"></span>
+            </button>
+            <button class="key-btn" @click="pressKey('2')">
+              <span class="key-num">2</span>
+              <span class="key-sub">ABC</span>
+            </button>
+            <button class="key-btn" @click="pressKey('3')">
+              <span class="key-num">3</span>
+              <span class="key-sub">DEF</span>
+            </button>
+            <button class="key-btn" @click="pressKey('4')">
+              <span class="key-num">4</span>
+              <span class="key-sub">GHI</span>
+            </button>
+            <button class="key-btn" @click="pressKey('5')">
+              <span class="key-num">5</span>
+              <span class="key-sub">JKL</span>
+            </button>
+            <button class="key-btn" @click="pressKey('6')">
+              <span class="key-num">6</span>
+              <span class="key-sub">MNO</span>
+            </button>
+            <button class="key-btn" @click="pressKey('7')">
+              <span class="key-num">7</span>
+              <span class="key-sub">PQRS</span>
+            </button>
+            <button class="key-btn" @click="pressKey('8')">
+              <span class="key-num">8</span>
+              <span class="key-sub">TUV</span>
+            </button>
+            <button class="key-btn" @click="pressKey('9')">
+              <span class="key-num">9</span>
+              <span class="key-sub">WXYZ</span>
+            </button>
+            <button class="key-btn key-util" @click="clearPin" title="Clear">
+              <i data-lucide="delete" style="width: 22px; height: 22px;"></i>
+            </button>
+            <button class="key-btn" @click="pressKey('0')">
+              <span class="key-num">0</span>
+              <span class="key-sub">+</span>
+            </button>
+            <button class="key-btn key-util" @click="backspacePin" title="Backspace">
+              <i data-lucide="arrow-left" style="width: 22px; height: 22px;"></i>
+            </button>
           </div>
-        </div>
-      </section>
+
+          <!-- Submit Punch Button -->
+          <button 
+            class="action-punch-btn" 
+            :disabled="pinDigits.length !== 4 || isSubmitting"
+            @click="handlePunchClick">
+            <i v-if="!isSubmitting" data-lucide="camera" style="width: 18px; height: 18px;"></i>
+            <i v-else data-lucide="loader-2" style="width: 18px; height: 18px; animation: spin 1s linear infinite;"></i>
+            <span>{{ isSubmitting ? 'Verifying Identity...' : 'CONFIRM PUNCH' }}</span>
+          </button>
+        </section>
+      </div>
     </main>
 
-    <!-- ATTENDANCE SUCCESS & ANTI-FAKE AUDIT MODAL -->
-    <div v-if="successResult" class="modal-overlay" @click.self="closeSuccessModal">
-      <div class="modal-card">
-        <div class="modal-header">
-          <div class="modal-title">
-            <i data-lucide="check-circle-2" style="width: 24px; height: 24px; color: var(--success);"></i>
-            <span>Attendance Confirmed!</span>
+    <!-- FIRST-TIME ENROLLMENT MODAL (Triggered when no reference image exists) -->
+    <div v-if="isFirstTimePrompt" class="modal-backdrop">
+      <div class="modal-box">
+        <div class="modal-inner-header">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <i data-lucide="shield-alert" style="width: 22px; height: 22px; color: var(--accent-blue);"></i>
+            <span style="font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 700;">
+              First-Time Reference Photo Setup
+            </span>
           </div>
-          <button class="modal-close-btn" @click="closeSuccessModal">
-            <i data-lucide="x" style="width: 16px; height: 16px;"></i>
-          </button>
         </div>
 
-        <div class="modal-body">
-          <div style="text-align: center;">
-            <div style="font-family: 'Outfit', sans-serif; font-size: 1.4rem; font-weight: 700; color: var(--text-main);">
-              {{ successResult.employee_name }}
-            </div>
-            <div style="font-size: 0.86rem; color: var(--text-secondary); margin-top: 4px;">
-              {{ successResult.employee_id }} &bull; {{ successResult.department }}
-            </div>
-            <div style="margin-top: 10px;">
-              <span :class="successResult.log_type === 'IN' ? 'feed-badge-in' : 'feed-badge-out'" style="font-size: 0.85rem; padding: 4px 12px; border-radius: 999px;">
-                {{ successResult.log_type === 'IN' ? 'CHECKED IN' : 'CHECKED OUT' }} AT {{ successResult.time }}
-              </span>
-            </div>
+        <div class="modal-inner-body" style="text-align: center;">
+          <div style="font-size: 0.95rem; font-weight: 700; color: var(--text-heading);">
+            Welcome, {{ previewEmployee?.employee_name }}!
+          </div>
+          <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.5;">
+            To prevent fake attendance and protect your identity, you must register your 
+            <strong>Official Reference Photo</strong> before attendance can be marked.
+          </p>
+
+          <!-- Captured Preview -->
+          <div v-if="firstTimeSnap" style="width: 150px; height: 150px; border-radius: 50%; overflow: hidden; margin: 0 auto; border: 4px solid var(--accent-blue); box-shadow: var(--shadow-card);">
+            <img :src="firstTimeSnap" style="width: 100%; height: 100%; object-fit: cover;" alt="Reference Preview">
           </div>
 
-          <!-- Dual Anti-Fake Comparison Card -->
-          <div class="anti-fake-comparison-grid">
-            <!-- Left: Live Captured Selfie -->
-            <div class="comparison-col">
-              <span class="comparison-tag tag-live">📸 Live Captured Selfie</span>
-              <div class="comparison-photo-wrap">
-                <img :src="successResult.captured_photo || '/assets/frappe/images/default-avatar.png'" alt="Captured Face">
-              </div>
-              <span style="font-size: 0.72rem; color: var(--text-secondary); font-weight: 600;">Taken via Kiosk Camera</span>
-            </div>
+          <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 6px;">
+            <button 
+              v-if="!firstTimeSnap" 
+              class="action-punch-btn" 
+              style="background: linear-gradient(135deg, #2563eb, #1d4ed8);"
+              @click="snapFirstTimePhoto">
+              <i data-lucide="camera" style="width: 18px; height: 18px;"></i>
+              <span>Capture Official Reference Photo</span>
+            </button>
 
-            <!-- Right: Admin Reference Photo -->
-            <div class="comparison-col">
-              <span class="comparison-tag tag-admin">🛡️ Admin Reference Photo</span>
-              <div class="comparison-photo-wrap">
-                <img :src="successResult.reference_photo || '/assets/frappe/images/default-avatar.png'" alt="Official Reference">
-              </div>
-              <span style="font-size: 0.72rem; color: var(--text-secondary); font-weight: 600;">Official HR Reference</span>
-            </div>
+            <button 
+              v-if="firstTimeSnap" 
+              class="action-punch-btn" 
+              style="background: linear-gradient(135deg, #059669, #047857);"
+              :disabled="isSubmitting"
+              @click="confirmFirstTimeRegistration">
+              <i data-lucide="check-circle" style="width: 18px; height: 18px;"></i>
+              <span>{{ isSubmitting ? 'Registering...' : 'Save & Mark My Attendance' }}</span>
+            </button>
+
+            <button 
+              v-if="firstTimeSnap" 
+              class="key-btn" 
+              style="aspect-ratio: auto; padding: 10px;"
+              @click="firstTimeSnap = null">
+              Retake Photo
+            </button>
+
+            <button 
+              class="key-btn" 
+              style="aspect-ratio: auto; padding: 8px; color: var(--text-muted); border: none;"
+              @click="cancelFirstTimePrompt">
+              Cancel
+            </button>
           </div>
-
-          <!-- Anti-Fake Audit Verdict -->
-          <div class="audit-verdict-box">
-            <i data-lucide="shield-check" style="width: 24px; height: 24px; flex-shrink: 0;"></i>
-            <div>
-              <div class="audit-verdict-text">Anti-Fake Verification: Matched & Logged</div>
-              <div style="font-size: 0.74rem; color: var(--text-secondary); margin-top: 2px;">
-                Both live selfie & official reference photo are audited and permanently archived in Frappe Attendance Log.
-              </div>
-            </div>
-          </div>
-
-          <button class="nav-btn nav-btn-primary" style="width: 100%; padding: 12px; justify-content: center; font-size: 0.95rem;" @click="closeSuccessModal">
-            Done (Reset in {{ autoResetTimer }}s)
-          </button>
         </div>
       </div>
     </div>
 
-    <!-- ADMIN MANAGEMENT & REFERENCE PHOTO MODAL -->
-    <div v-if="showAdminModal" class="modal-overlay" @click.self="showAdminModal = false">
-      <div class="modal-card" style="max-width: 640px;">
-        <div class="modal-header">
-          <div class="modal-title">
-            <i data-lucide="shield-alert" style="width: 22px; height: 22px; color: var(--primary);"></i>
-            <span>Admin & Reference Photo Portal</span>
+    <!-- ATTENDANCE SUCCESS & ANTI-FAKE AUDIT MODAL -->
+    <div v-if="successRecord" class="modal-backdrop" @click.self="dismissSuccess">
+      <div class="modal-box">
+        <div class="modal-inner-header">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <i data-lucide="check-circle-2" style="width: 24px; height: 24px; color: var(--accent-emerald);"></i>
+            <span style="font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 700;">
+              Attendance Confirmed
+            </span>
           </div>
-          <button class="modal-close-btn" @click="showAdminModal = false">
+          <button class="key-btn" style="width: 32px; height: 32px; border-radius: 50%; aspect-ratio: 1;" @click="dismissSuccess">
             <i data-lucide="x" style="width: 16px; height: 16px;"></i>
           </button>
         </div>
 
-        <!-- If Admin Not Authenticated Yet -->
-        <div v-if="!adminAuthenticated" class="modal-body" style="text-align: center;">
-          <div style="max-width: 320px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px;">
-            <i data-lucide="lock" style="width: 44px; height: 44px; margin: 0 auto; color: var(--primary);"></i>
-            <div style="font-weight: 700; font-size: 1.1rem;">Admin Authentication</div>
-            <p style="font-size: 0.84rem; color: var(--text-secondary);">
-              Enter Kiosk Admin PIN to enroll reference photos and manage employee secret PINs.
-            </p>
-            <input 
-              type="password" 
-              class="form-input" 
-              placeholder="Enter Admin PIN (Default: 1234)" 
-              v-model="adminPinInput"
-              @keyup.enter="authenticateAdmin"
-              style="text-align: center; letter-spacing: 0.3em; font-size: 1.2rem;">
-            <button class="punch-action-btn" @click="authenticateAdmin">Unlock Admin Portal</button>
-          </div>
-        </div>
-
-        <!-- Authenticated Admin Interface -->
-        <div v-else>
-          <!-- Admin Tabs -->
-          <div class="admin-nav-tabs">
-            <button 
-              class="admin-tab-btn" 
-              :class="{ active: adminTab === 'enroll' }" 
-              @click="adminTab = 'enroll'">
-              <i data-lucide="user-plus" style="width: 16px; height: 16px;"></i> Add Reference Photo & PIN
-            </button>
-            <button 
-              class="admin-tab-btn" 
-              :class="{ active: adminTab === 'list' }" 
-              @click="adminTab = 'list'">
-              <i data-lucide="users" style="width: 16px; height: 16px;"></i> Enrolled Directory ({{ employeesList.length }})
-            </button>
+        <div class="modal-inner-body">
+          <div style="text-align: center;">
+            <div style="font-family: 'Outfit', sans-serif; font-size: 1.35rem; font-weight: 700; color: var(--text-heading);">
+              {{ successRecord.employee_name }}
+            </div>
+            <div style="font-size: 0.84rem; color: var(--text-muted); margin-top: 2px;">
+              {{ successRecord.employee_id }} &bull; {{ successRecord.department }}
+            </div>
+            <div style="margin-top: 10px; display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: var(--radius-full); background: var(--accent-emerald-light); color: var(--accent-emerald); font-weight: 700; font-size: 0.88rem;">
+              <span>{{ successRecord.log_type === 'IN' ? 'CHECKED IN' : 'CHECKED OUT' }}</span>
+              &bull;
+              <span>{{ successRecord.timing_label || successRecord.timing_module }}</span>
+            </div>
           </div>
 
-          <div class="modal-body">
-            <!-- TAB 1: ENROLL REFERENCE PHOTO & PIN -->
-            <div v-if="adminTab === 'enroll'" style="display: flex; flex-direction: column; gap: 18px;">
-              <div class="form-group">
-                <label class="form-label">Select Employee</label>
-                <select class="form-select" v-model="enrollForm.employee" @change="onEmployeeSelectChange">
-                  <option value="" disabled>-- Choose Active Employee --</option>
-                  <option v-for="emp in employeesList" :key="emp.employee" :value="emp.employee">
-                    {{ emp.employee_name }} ({{ emp.employee }}) &bull; {{ emp.has_reference_image ? '🛡️ Has Photo' : '⚠️ Missing Photo' }}
-                  </option>
-                </select>
+          <!-- Dual Anti-Fake Comparison Box -->
+          <div class="anti-fake-side-by-side">
+            <!-- Left: Live Camera Selfie -->
+            <div class="photo-col">
+              <span class="photo-tag tag-live">📸 Live Camera Selfie</span>
+              <div class="photo-thumb-wrap">
+                <img :src="successRecord.captured_photo || '/assets/frappe/images/default-avatar.png'" alt="Captured Face">
               </div>
-
-              <div class="form-group">
-                <label class="form-label">Employee 4-Digit Secret PIN</label>
-                <input 
-                  type="text" 
-                  maxlength="4" 
-                  class="form-input" 
-                  placeholder="e.g. 2580" 
-                  v-model="enrollForm.pin"
-                  style="font-family: monospace; font-size: 1.1rem; letter-spacing: 0.15em;">
-                <span style="font-size: 0.72rem; color: var(--text-secondary);">Employee will type this 4-digit code on the kiosk to punch attendance.</span>
-              </div>
-
-              <!-- Reference Photo Section -->
-              <div class="form-group">
-                <label class="form-label">🛡️ Official Reference Photo (Prevents Fake Attendance)</label>
-                
-                <!-- Current / Selected Photo Preview -->
-                <div v-if="enrollForm.photoPreview" style="text-align: center; margin-bottom: 10px;">
-                  <div class="admin-ref-preview-wrap">
-                    <img :src="enrollForm.photoPreview" alt="Reference Preview">
-                  </div>
-                  <div class="ref-badge" style="margin-top: 8px;">
-                    <i data-lucide="shield-check" style="width: 12px; height: 12px;"></i> Official Reference Photo Selected
-                  </div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                  <!-- Upload file button -->
-                  <label class="ref-upload-dropzone">
-                    <i data-lucide="upload" style="width: 22px; height: 22px; color: var(--primary);"></i>
-                    <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-main);">Upload Image File</span>
-                    <span style="font-size: 0.7rem; color: var(--text-secondary);">From phone/PC gallery</span>
-                    <input type="file" accept="image/*" style="display: none;" @change="handleFileUpload">
-                  </label>
-
-                  <!-- Snap from Kiosk Camera -->
-                  <button type="button" class="ref-upload-dropzone" style="font-family: inherit;" @click="snapFromKioskCamera">
-                    <i data-lucide="camera" style="width: 22px; height: 22px; color: var(--success);"></i>
-                    <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-main);">Snap From Camera</span>
-                    <span style="font-size: 0.7rem; color: var(--text-secondary);">Capture current frame</span>
-                  </button>
-                </div>
-              </div>
-
-              <button 
-                class="punch-action-btn" 
-                :disabled="!enrollForm.employee || enrollForm.pin.length !== 4 || isEnrolling"
-                @click="saveEnrollment">
-                <i v-if="!isEnrolling" data-lucide="save" style="width: 18px; height: 18px;"></i>
-                <i v-else data-lucide="loader-2" style="width: 18px; height: 18px; animation: spin 1s linear infinite;"></i>
-                <span>{{ isEnrolling ? 'Saving Profile...' : 'SAVE REFERENCE PHOTO & PIN' }}</span>
-              </button>
+              <span style="font-size: 0.7rem; color: var(--text-muted);">Real-time snapshot</span>
             </div>
 
-            <!-- TAB 2: EMPLOYEE DIRECTORY & REFERENCE STATUS -->
-            <div v-if="adminTab === 'list'" style="display: flex; flex-direction: column; gap: 10px;">
-              <div v-for="emp in employeesList" :key="emp.employee" class="feed-item" style="background: #ffffff;">
-                <img :src="emp.avatar || '/assets/frappe/images/default-avatar.png'" class="feed-avatar" alt="Emp Photo">
-                <div class="feed-content">
-                  <div class="feed-name">{{ emp.employee_name }} ({{ emp.employee }})</div>
-                  <div class="feed-meta">
-                    <span v-if="emp.has_reference_image" class="badge-anti-fake-header" style="font-size: 0.65rem; padding: 2px 6px;">
-                      🛡️ Reference Enrolled
-                    </span>
-                    <span v-else style="background: var(--warning-light); color: var(--warning); border: 1px solid var(--warning-border); padding: 2px 6px; border-radius: 999px; font-size: 0.65rem; font-weight: 700;">
-                      ⚠️ No Photo
-                    </span>
-                    <span>PIN: {{ emp.masked_pin }}</span>
-                  </div>
-                </div>
-                <button class="nav-btn" style="padding: 4px 10px; font-size: 0.76rem;" @click="selectEmployeeForEdit(emp)">
-                  Edit
-                </button>
+            <!-- Right: Official Reference Photo -->
+            <div class="photo-col">
+              <span class="photo-tag tag-ref">🛡️ Official Reference Photo</span>
+              <div class="photo-thumb-wrap">
+                <img :src="successRecord.reference_photo || '/assets/frappe/images/default-avatar.png'" alt="Official Reference">
+              </div>
+              <span style="font-size: 0.7rem; color: var(--text-muted);">Registered Face ID</span>
+            </div>
+          </div>
+
+          <!-- Audit Verified Banner -->
+          <div class="audit-stamp-box">
+            <i data-lucide="shield-check" style="width: 24px; height: 24px; flex-shrink: 0;"></i>
+            <div>
+              <div style="font-weight: 700; font-size: 0.85rem;">Anti-Fake Verification: Matched & Logged</div>
+              <div style="font-size: 0.72rem; opacity: 0.9; margin-top: 2px;">
+                Verified against registered face profile. Automatically timestamped at {{ successRecord.time }}.
               </div>
             </div>
           </div>
+
+          <button 
+            class="action-punch-btn" 
+            style="background: var(--accent-blue);"
+            @click="dismissSuccess">
+            Done (Resetting in {{ autoResetCountdown }}s)
+          </button>
         </div>
       </div>
     </div>
 
     <!-- Notification Toast -->
-    <div v-if="toast" class="toast-msg">
+    <div v-if="toastMsg" class="kiosk-toast">
       <i data-lucide="info" style="width: 16px; height: 16px;"></i>
-      <span>{{ toast }}</span>
+      <span>{{ toastMsg }}</span>
     </div>
   </div>
+{% endraw %}
 
   <script>
     const { createApp, ref, onMounted, nextTick } = Vue;
 
     createApp({
       setup() {
-        const kioskTitle = ref('Smart Face & PIN Attendance');
-        const company = ref('');
+        const kioskTitle = ref('Smart Biometric Attendance');
         const currentTimeStr = ref('');
-        const selectedMode = ref('Auto Detect');
+        const currentDateStr = ref('');
+        const currentHour = ref(new Date().getHours() + new Date().getMinutes() / 60);
         const pinDigits = ref('');
-        const previewProfile = ref(null);
+        const previewEmployee = ref(null);
         const isSubmitting = ref(false);
-        const cameraError = ref('');
         const facingMode = ref('user');
-        const recentFeed = ref([]);
-        const successResult = ref(null);
-        const autoResetTimer = ref(4);
-        let resetInterval = null;
-        let previewDebounce = null;
-        const toast = ref('');
+        const successRecord = ref(null);
+        const autoResetCountdown = ref(4);
+        let countdownTimer = null;
+        const toastMsg = ref('');
 
-        // Admin Modal States
-        const showAdminModal = ref(false);
-        const adminAuthenticated = ref(false);
-        const adminPinInput = ref('');
-        const adminTab = ref('enroll');
-        const employeesList = ref([]);
-        const isEnrolling = ref(false);
-        const enrollForm = ref({
-          employee: '',
-          pin: '',
-          photoPreview: '',
-          photoBase64: ''
+        // First-Time Registration State
+        const isFirstTimePrompt = ref(false);
+        const firstTimeSnap = ref(null);
+
+        // Kiosk Shift Timing Configuration
+        const config = ref({
+          current_zone: 'Regular Shift Active',
+          zone_type: 'Regular Day',
+          zone_color: 'emerald',
+          presence_pct: 100,
+          greeting: 'Zero-Touch Biometric Attendance'
         });
 
-        // Audio synthesizer for modern tactile audio feedback
+        // Acoustic Haptic Synth
         const playTone = (type = 'click') => {
           try {
             const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -1512,78 +1153,102 @@
 
             if (type === 'click') {
               osc.type = 'sine';
-              osc.frequency.setValueAtTime(600, ctx.currentTime);
-              gain.gain.setValueAtTime(0.08, ctx.currentTime);
-              gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+              osc.frequency.setValueAtTime(650, ctx.currentTime);
+              gain.gain.setValueAtTime(0.06, ctx.currentTime);
+              gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
               osc.start();
-              osc.stop(ctx.currentTime + 0.05);
+              osc.stop(ctx.currentTime + 0.04);
             } else if (type === 'success') {
               osc.type = 'triangle';
-              osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
-              osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1); // E5
-              gain.gain.setValueAtTime(0.12, ctx.currentTime);
-              gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+              osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+              osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.08);
+              gain.gain.setValueAtTime(0.1, ctx.currentTime);
+              gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
               osc.start();
-              osc.stop(ctx.currentTime + 0.4);
+              osc.stop(ctx.currentTime + 0.35);
             } else if (type === 'error') {
               osc.type = 'sawtooth';
-              osc.frequency.setValueAtTime(180, ctx.currentTime);
-              gain.gain.setValueAtTime(0.1, ctx.currentTime);
-              gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+              osc.frequency.setValueAtTime(160, ctx.currentTime);
+              gain.gain.setValueAtTime(0.09, ctx.currentTime);
+              gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
               osc.start();
-              osc.stop(ctx.currentTime + 0.25);
+              osc.stop(ctx.currentTime + 0.2);
             }
-          } catch (e) {
-            // AudioContext not allowed before gesture
-          }
+          } catch(e) {}
         };
 
         const showToast = (msg) => {
-          toast.value = msg;
+          toastMsg.value = msg;
           setTimeout(() => {
-            if (toast.value === msg) toast.value = '';
+            if (toastMsg.value === msg) toastMsg.value = '';
           }, 3000);
         };
 
         const updateClock = () => {
           const now = new Date();
           currentTimeStr.value = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          currentDateStr.value = now.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+          currentHour.value = now.getHours() + now.getMinutes() / 60;
+        };
+
+        const getShiftProgressPercent = () => {
+          // Standard day timeline from 09:00 (9) to 20:00 (20)
+          const h = currentHour.value;
+          if (h <= 9) return 10;
+          if (h >= 20) return 100;
+          return Math.round(((h - 9) / (20 - 9)) * 90) + 10;
+        };
+
+        const getZoneColorHex = (colorName) => {
+          const colors = {
+            emerald: '#10b981',
+            amber: '#f59e0b',
+            blue: '#2563eb',
+            purple: '#8b5cf6'
+          };
+          return colors[colorName] || '#10b981';
         };
 
         // Initialize Camera
         let streamTrack = null;
         const initCamera = async () => {
-          cameraError.value = '';
           const video = document.getElementById('camera-video');
           if (!video) return;
 
-          if (streamTrack) {
-            streamTrack.stop();
-          }
+          if (streamTrack) streamTrack.stop();
 
           try {
             const constraints = {
-              video: {
-                facingMode: facingMode.value,
-                width: { ideal: 1280 },
-                height: { ideal: 960 }
-              },
+              video: { facingMode: facingMode.value, width: { ideal: 1280 }, height: { ideal: 960 } },
               audio: false
             };
             const stream = await navigator.mediaDevices.getUserMedia(constraints);
             video.srcObject = stream;
             streamTrack = stream.getVideoTracks()[0];
-          } catch (err) {
-            console.error('Camera error:', err);
-            cameraError.value = err.name === 'NotAllowedError' 
-              ? 'Camera permission denied. Please allow camera in browser settings.' 
-              : 'Unable to access camera (' + err.message + ')';
+          } catch(e) {
+            console.error('Camera init error:', e);
           }
         };
 
         const toggleCameraFacing = () => {
           facingMode.value = facingMode.value === 'user' ? 'environment' : 'user';
           initCamera();
+        };
+
+        const captureFrame = () => {
+          const video = document.getElementById('camera-video');
+          const canvas = document.getElementById('canvas-snap');
+          if (!video || !canvas || video.videoWidth === 0) return null;
+
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          const ctx = canvas.getContext('2d');
+          if (facingMode.value === 'user') {
+            ctx.translate(canvas.width, 0);
+            ctx.scale(-1, 1);
+          }
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          return canvas.toDataURL('image/jpeg', 0.84);
         };
 
         // Keypad Interactions
@@ -1594,229 +1259,74 @@
           if (navigator.vibrate) navigator.vibrate(15);
 
           if (pinDigits.value.length === 4) {
-            triggerPinPreview();
+            lookupPin();
           }
         };
 
         const clearPin = () => {
           pinDigits.value = '';
-          previewProfile.value = null;
+          previewEmployee.value = null;
+          isFirstTimePrompt.value = false;
+          firstTimeSnap.value = null;
           playTone('click');
         };
 
         const backspacePin = () => {
           pinDigits.value = pinDigits.value.slice(0, -1);
-          previewProfile.value = null;
+          previewEmployee.value = null;
           playTone('click');
         };
 
-        // Fast Preview Lookup
-        const triggerPinPreview = async () => {
+        // Instant PIN Lookup
+        const lookupPin = async () => {
           try {
             const res = await fetch(`/api/method/face_attendance.api.verify_pin_preview?pin=${pinDigits.value}`);
             const data = await res.json();
             if (data.message && data.message.success) {
-              previewProfile.value = data.message;
-              if (selectedMode.value === 'Auto Detect' && data.message.suggested_log_type) {
-                // Keep Auto Detect active but hint log type
+              previewEmployee.value = data.message;
+
+              // Check if first-time setup is required
+              if (data.message.is_first_time) {
+                isFirstTimePrompt.value = true;
+                showToast('First-time setup: Please capture your Official Reference Photo');
               }
               nextTick(() => lucide.createIcons());
             } else {
-              previewProfile.value = null;
+              showToast(data.message?.message || 'PIN not recognized');
+              previewEmployee.value = null;
             }
-          } catch (e) {
-            console.error('Preview error:', e);
+          } catch(e) {
+            console.error('Lookup error:', e);
           }
         };
 
-        // Capture Frame from Camera
-        const captureFrame = () => {
-          const video = document.getElementById('camera-video');
-          const canvas = document.getElementById('canvas-snap');
-          if (!video || !canvas || video.videoWidth === 0) return null;
-
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-          const ctx = canvas.getContext('2d');
-          
-          if (facingMode.value === 'user') {
-            ctx.translate(canvas.width, 0);
-            ctx.scale(-1, 1);
-          }
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          return canvas.toDataURL('image/jpeg', 0.82);
-        };
-
-        // Submit Attendance
-        const submitAttendance = async () => {
+        // Handle Confirmation
+        const handlePunchClick = () => {
           if (pinDigits.value.length !== 4) {
-            showToast('Please enter full 4-digit PIN');
+            showToast('Enter 4-digit PIN');
             return;
           }
 
+          if (previewEmployee.value && previewEmployee.value.is_first_time) {
+            isFirstTimePrompt.value = true;
+            return;
+          }
+
+          submitAttendance();
+        };
+
+        // Submit Normal Attendance
+        const submitAttendance = async () => {
           isSubmitting.value = true;
           const photoBase64 = captureFrame();
 
           try {
             const payload = {
               pin: pinDigits.value,
-              photo_base64: photoBase64,
-              log_type: selectedMode.value === 'Auto Detect' ? null : selectedMode.value
+              photo_base64: photoBase64
             };
 
-            const response = await fetch('/api/method/face_attendance.api.mark_face_pin_attendance', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-              },
-              body: JSON.stringify(payload)
-            });
-
-            const result = await response.json();
-            const data = result.message || result;
-
-            if (data.success) {
-              playTone('success');
-              if (navigator.vibrate) navigator.vibrate([40, 60, 40]);
-              successResult.value = data;
-              clearPin();
-              fetchRecentFeed();
-              startAutoResetTimer();
-              nextTick(() => lucide.createIcons());
-            } else {
-              playTone('error');
-              showToast(data.message || 'Verification failed');
-              clearPin();
-            }
-          } catch (err) {
-            playTone('error');
-            showToast('Server connection error. Please retry.');
-          } finally {
-            isSubmitting.value = false;
-          }
-        };
-
-        // Success Modal & Auto Reset
-        const startAutoResetTimer = () => {
-          autoResetTimer.value = 4;
-          if (resetInterval) clearInterval(resetInterval);
-          resetInterval = setInterval(() => {
-            autoResetTimer.value -= 1;
-            if (autoResetTimer.value <= 0) {
-              closeSuccessModal();
-            }
-          }, 1000);
-        };
-
-        const closeSuccessModal = () => {
-          if (resetInterval) clearInterval(resetInterval);
-          successResult.value = null;
-        };
-
-        const setMode = (mode) => {
-          selectedMode.value = mode;
-          playTone('click');
-        };
-
-        // Fetch Recent Today Feed
-        const fetchRecentFeed = async () => {
-          try {
-            const res = await fetch('/api/method/face_attendance.api.get_today_kiosk_feed?limit=12');
-            const data = await res.json();
-            if (data.message && data.message.feed) {
-              recentFeed.value = data.message.feed;
-              nextTick(() => lucide.createIcons());
-            }
-          } catch (e) {
-            console.error('Feed error:', e);
-          }
-        };
-
-        // Admin Portal Functions
-        const openAdminModal = () => {
-          showAdminModal.value = true;
-          adminPinInput.value = '';
-          nextTick(() => lucide.createIcons());
-        };
-
-        const authenticateAdmin = async () => {
-          try {
-            const res = await fetch(`/api/method/face_attendance.api.get_employees_list?admin_pin=${adminPinInput.value}`);
-            const data = await res.json();
-            if (data.message && data.message.success) {
-              adminAuthenticated.value = true;
-              employeesList.value = data.message.employees;
-              showToast('Admin Authenticated');
-              nextTick(() => lucide.createIcons());
-            } else {
-              showToast(data.message?.message || 'Invalid Admin PIN');
-            }
-          } catch (e) {
-            showToast('Error verifying admin pin');
-          }
-        };
-
-        const onEmployeeSelectChange = () => {
-          const emp = employeesList.value.find(e => e.employee === enrollForm.value.employee);
-          if (emp) {
-            enrollForm.value.pin = emp.pin || '';
-            enrollForm.value.photoPreview = emp.avatar || '';
-            enrollForm.value.photoBase64 = '';
-          }
-        };
-
-        const selectEmployeeForEdit = (emp) => {
-          adminTab.value = 'enroll';
-          enrollForm.value.employee = emp.employee;
-          enrollForm.value.pin = emp.pin || '';
-          enrollForm.value.photoPreview = emp.avatar || '';
-          enrollForm.value.photoBase64 = '';
-          nextTick(() => lucide.createIcons());
-        };
-
-        const handleFileUpload = (e) => {
-          const file = e.target.files[0];
-          if (!file) return;
-
-          const reader = new FileReader();
-          reader.onload = (uploadEvt) => {
-            enrollForm.value.photoPreview = uploadEvt.target.result;
-            enrollForm.value.photoBase64 = uploadEvt.target.result;
-            nextTick(() => lucide.createIcons());
-          };
-          reader.readAsDataURL(file);
-        };
-
-        const snapFromKioskCamera = () => {
-          const snap = captureFrame();
-          if (snap) {
-            enrollForm.value.photoPreview = snap;
-            enrollForm.value.photoBase64 = snap;
-            showToast('Reference frame snapped from camera!');
-            nextTick(() => lucide.createIcons());
-          } else {
-            showToast('Camera frame not available. Ensure camera is active.');
-          }
-        };
-
-        const saveEnrollment = async () => {
-          if (!enrollForm.value.employee) return;
-          if (enrollForm.value.pin.length !== 4) {
-            showToast('PIN must be 4 digits');
-            return;
-          }
-
-          isEnrolling.value = true;
-          try {
-            const payload = {
-              employee: enrollForm.value.employee,
-              pin: enrollForm.value.pin,
-              photo_base64: enrollForm.value.photoBase64 || null,
-              admin_pin: adminPinInput.value
-            };
-
-            const res = await fetch('/api/method/face_attendance.api.enroll_employee_face', {
+            const res = await fetch('/api/method/face_attendance.api.mark_face_pin_attendance', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(payload)
@@ -1827,40 +1337,115 @@
 
             if (result.success) {
               playTone('success');
-              showToast(result.message || 'Reference photo & PIN saved!');
-              // Refresh employee list
-              authenticateAdmin();
-              enrollForm.value = { employee: '', pin: '', photoPreview: '', photoBase64: '' };
+              if (navigator.vibrate) navigator.vibrate([40, 60, 40]);
+              successRecord.value = result;
+              clearPin();
+              startAutoReset();
+              nextTick(() => lucide.createIcons());
+            } else if (result.require_first_time_setup) {
+              isFirstTimePrompt.value = true;
             } else {
-              showToast(result.message || 'Failed to save enrollment');
+              playTone('error');
+              showToast(result.message || 'Verification failed');
+              clearPin();
             }
-          } catch (e) {
-            showToast('Network error while saving enrollment');
+          } catch(e) {
+            playTone('error');
+            showToast('Server error while submitting attendance');
           } finally {
-            isEnrolling.value = false;
+            isSubmitting.value = false;
           }
         };
 
+        // First-Time Registration Methods
+        const snapFirstTimePhoto = () => {
+          const snap = captureFrame();
+          if (snap) {
+            firstTimeSnap.value = snap;
+            playTone('click');
+            showToast('Official Reference Photo Captured!');
+          }
+        };
+
+        const confirmFirstTimeRegistration = async () => {
+          if (!firstTimeSnap.value) return;
+          isSubmitting.value = true;
+
+          try {
+            const payload = {
+              pin: pinDigits.value,
+              photo_base64: firstTimeSnap.value
+            };
+
+            const res = await fetch('/api/method/face_attendance.api.register_first_time_face_and_attendance', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+
+            const data = await res.json();
+            const result = data.message || data;
+
+            if (result.success) {
+              playTone('success');
+              isFirstTimePrompt.value = false;
+              firstTimeSnap.value = null;
+              successRecord.value = result;
+              clearPin();
+              startAutoReset();
+              nextTick(() => lucide.createIcons());
+            } else {
+              showToast(result.message || 'Registration failed');
+            }
+          } catch(e) {
+            showToast('Error registering reference face');
+          } finally {
+            isSubmitting.value = false;
+          }
+        };
+
+        const cancelFirstTimePrompt = () => {
+          isFirstTimePrompt.value = false;
+          firstTimeSnap.value = null;
+          clearPin();
+        };
+
+        // Auto Reset
+        const startAutoReset = () => {
+          autoResetCountdown.value = 4;
+          if (countdownTimer) clearInterval(countdownTimer);
+          countdownTimer = setInterval(() => {
+            autoResetCountdown.value -= 1;
+            if (autoResetCountdown.value <= 0) {
+              dismissSuccess();
+            }
+          }, 1000);
+        };
+
+        const dismissSuccess = () => {
+          if (countdownTimer) clearInterval(countdownTimer);
+          successRecord.value = null;
+        };
+
+        // Initial Load
         onMounted(() => {
           updateClock();
           setInterval(updateClock, 1000);
           initCamera();
-          fetchRecentFeed();
 
-          // Load kiosk config
+          // Fetch Live Kiosk Timing Config & Workplace Pulse
           fetch('/api/method/face_attendance.api.get_kiosk_config')
             .then(r => r.json())
             .then(res => {
               if (res.message && res.message.success) {
+                config.value = { ...config.value, ...res.message };
                 kioskTitle.value = res.message.kiosk_title || kioskTitle.value;
-                company.value = res.message.company || '';
               }
             })
             .catch(() => {});
 
-          // Physical keyboard support for typing PIN
+          // Physical Keypad Listener
           window.addEventListener('keydown', (e) => {
-            if (showAdminModal.value && !adminAuthenticated.value) return;
             if (e.key >= '0' && e.key <= '9') {
               pressKey(e.key);
             } else if (e.key === 'Backspace') {
@@ -1868,7 +1453,7 @@
             } else if (e.key === 'Escape') {
               clearPin();
             } else if (e.key === 'Enter') {
-              if (pinDigits.value.length === 4) submitAttendance();
+              if (pinDigits.value.length === 4) handlePunchClick();
             }
           });
 
@@ -1877,44 +1462,32 @@
 
         return {
           kioskTitle,
-          company,
           currentTimeStr,
-          selectedMode,
+          currentDateStr,
+          currentHour,
+          config,
           pinDigits,
-          previewProfile,
+          previewEmployee,
           isSubmitting,
-          cameraError,
-          recentFeed,
-          successResult,
-          autoResetTimer,
-          toast,
-          showAdminModal,
-          adminAuthenticated,
-          adminPinInput,
-          adminTab,
-          employeesList,
-          isEnrolling,
-          enrollForm,
-          initCamera,
+          successRecord,
+          autoResetCountdown,
+          toastMsg,
+          isFirstTimePrompt,
+          firstTimeSnap,
+          getShiftProgressPercent,
+          getZoneColorHex,
           toggleCameraFacing,
           pressKey,
           clearPin,
           backspacePin,
-          submitAttendance,
-          closeSuccessModal,
-          setMode,
-          fetchRecentFeed,
-          openAdminModal,
-          authenticateAdmin,
-          onEmployeeSelectChange,
-          selectEmployeeForEdit,
-          handleFileUpload,
-          snapFromKioskCamera,
-          saveEnrollment
+          handlePunchClick,
+          snapFirstTimePhoto,
+          confirmFirstTimeRegistration,
+          cancelFirstTimePrompt,
+          dismissSuccess
         };
       }
     }).mount('#app');
   </script>
-{% endraw %}
 </body>
 </html>
