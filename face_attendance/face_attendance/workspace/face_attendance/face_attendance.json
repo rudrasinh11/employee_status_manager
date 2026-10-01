@@ -1,0 +1,97 @@
+{
+ "category": "Modules",
+ "charts": [],
+ "content": "[{\"id\": \"h1\", \"type\": \"header\", \"data\": {\"text\": \"Smart Face & PIN Attendance Hub\", \"level\": 3}}, {\"id\": \"c1\", \"type\": \"card\", \"data\": {\"card_name\": \"Kiosk & Verification\", \"col\": 6}}, {\"id\": \"c2\", \"type\": \"card\", \"data\": {\"card_name\": \"Audit & HRMS Records\", \"col\": 6}}]",
+ "creation": "2026-10-01 12:00:00.000000",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "camera",
+ "idx": 1,
+ "indicator_color": "cyan",
+ "is_hidden": 0,
+ "label": "Face Attendance",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Employee Face & PIN Profiles",
+   "link_count": 0,
+   "link_to": "Face Attendance Profile",
+   "link_type": "DocType",
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Live Attendance Audit Logs",
+   "link_count": 0,
+   "link_to": "Face Attendance Log",
+   "link_type": "DocType",
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Kiosk & Feature Settings",
+   "link_count": 0,
+   "link_to": "Face Attendance Settings",
+   "link_type": "DocType",
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Employee Checkins",
+   "link_count": 0,
+   "link_to": "Employee Checkin",
+   "link_type": "DocType",
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Attendance Register",
+   "link_count": 0,
+   "link_to": "Attendance",
+   "link_type": "DocType",
+   "type": "Link"
+  }
+ ],
+ "modified": "2026-10-01 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Face Attendance",
+ "name": "Face Attendance",
+ "number_cards": [],
+ "owner": "Administrator",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [],
+ "sequence_id": 1.0,
+ "shortcuts": [
+  {
+   "color": "Green",
+   "doc_view": "",
+   "label": "Face Profiles",
+   "link_to": "Face Attendance Profile",
+   "type": "DocType"
+  },
+  {
+   "color": "Blue",
+   "doc_view": "",
+   "label": "Attendance Logs",
+   "link_to": "Face Attendance Log",
+   "type": "DocType"
+  },
+  {
+   "color": "Purple",
+   "doc_view": "",
+   "label": "Kiosk Settings",
+   "link_to": "Face Attendance Settings",
+   "type": "DocType"
+  }
+ ],
+ "title": "Face Attendance"
+}

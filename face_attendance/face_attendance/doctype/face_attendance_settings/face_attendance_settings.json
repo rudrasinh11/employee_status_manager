@@ -1,0 +1,135 @@
+{
+ "actions": [],
+ "creation": "2026-10-01 12:00:00.000000",
+ "description": "Configuration settings for Face and PIN Attendance Kiosk",
+ "doctype": "DocType",
+ "document_type": "Document",
+ "engine": "InnoDB",
+ "issingle": 1,
+ "field_order": [
+  "sec_general",
+  "kiosk_title",
+  "company",
+  "kiosk_admin_pin",
+  "col_break_1",
+  "auto_reset_seconds",
+  "default_log_type",
+  "sec_features",
+  "require_face",
+  "enable_sound",
+  "col_break_2",
+  "enable_haptics",
+  "enable_geo"
+ ],
+ "fields": [
+  {
+   "fieldname": "sec_general",
+   "fieldtype": "Section Break",
+   "label": "General Settings"
+  },
+  {
+   "default": "Smart Face & PIN Attendance",
+   "fieldname": "kiosk_title",
+   "fieldtype": "Data",
+   "label": "Kiosk Title",
+   "reqd": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
+  },
+  {
+   "default": "1234",
+   "fieldname": "kiosk_admin_pin",
+   "fieldtype": "Data",
+   "label": "Kiosk Admin 4-Digit PIN (to open Enrollment)",
+   "reqd": 1
+  },
+  {
+   "fieldname": "col_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "3",
+   "fieldname": "auto_reset_seconds",
+   "fieldtype": "Int",
+   "label": "Auto-Reset Delay (seconds)",
+   "reqd": 1
+  },
+  {
+   "default": "Auto Detect",
+   "fieldname": "default_log_type",
+   "fieldtype": "Select",
+   "label": "Default Log Mode",
+   "options": "Auto Detect\nIN\nOUT",
+   "reqd": 1
+  },
+  {
+   "fieldname": "sec_features",
+   "fieldtype": "Section Break",
+   "label": "Kiosk Capabilities & Feedback"
+  },
+  {
+   "default": "1",
+   "fieldname": "require_face",
+   "fieldtype": "Check",
+   "label": "Require Face in Camera Viewfinder"
+  },
+  {
+   "default": "1",
+   "fieldname": "enable_sound",
+   "fieldtype": "Check",
+   "label": "Enable Audio & Chime Feedback"
+  },
+  {
+   "fieldname": "col_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "enable_haptics",
+   "fieldtype": "Check",
+   "label": "Enable Touch Haptics"
+  },
+  {
+   "default": "1",
+   "fieldname": "enable_geo",
+   "fieldtype": "Check",
+   "label": "Record Device Geolocation Coordinates"
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-01 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Face Attendance",
+ "name": "Face Attendance Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 0,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR Manager",
+   "share": 1,
+   "write": 1
+  }
+ ]
+}
