@@ -6,7 +6,7 @@ from frappe import _
 from frappe.utils import now_datetime, nowdate, format_time, getdate
 
 @frappe.whitelist(allow_guest=True)
-def get_kiosk_config():
+def get_kiosk_config() -> dict:
     """Return kiosk settings and basic status."""
     try:
         settings = frappe.get_single("Face Attendance Settings")
@@ -35,15 +35,15 @@ def get_kiosk_config():
         }
 
 @frappe.whitelist(allow_guest=True)
-def verify_pin_preview(pin):
+def verify_pin_preview(pin: str) -> dict:
     """Quick lookup to show employee name & avatar when 4 digits are entered."""
     if not pin:
         return {"success": False, "message": "PIN required"}
     
-    pin = str(pin).strip()
+    pin_str = str(pin).strip()
     profile = frappe.db.get_value(
         "Face Attendance Profile",
-        {"secret_pin": pin, "status": "Active"},
+        {"secret_pin": pin_str, "status": "Active"},
         ["name", "employee", "employee_name", "department", "designation", "face_image", "last_log_type"],
         as_dict=True
     )
@@ -65,7 +65,13 @@ def verify_pin_preview(pin):
     }
 
 @frappe.whitelist(allow_guest=True)
-def mark_face_pin_attendance(pin, photo_base64=None, log_type=None, coords=None, device_info=None):
+def mark_face_pin_attendance(
+    pin: str,
+    photo_base64: str | None = None,
+    log_type: str | None = None,
+    coords: str | None = None,
+    device_info: str | None = None
+) -> dict:
     """
     Main attendance marking endpoint:
     - Verifies 4-digit PIN against Face Attendance Profile
@@ -78,12 +84,12 @@ def mark_face_pin_attendance(pin, photo_base64=None, log_type=None, coords=None,
     if not pin:
         frappe.throw(_("4-Digit Secret PIN is required"))
     
-    pin = str(pin).strip()
+    pin_str = str(pin).strip()
     
     # 1. Lookup Profile
     profile = frappe.db.get_value(
         "Face Attendance Profile",
-        {"secret_pin": pin, "status": "Active"},
+        {"secret_pin": pin_str, "status": "Active"},
         ["name", "employee", "employee_name", "department", "designation", "face_image", "total_checkins", "last_log_type"],
         as_dict=True
     )
@@ -108,7 +114,6 @@ def mark_face_pin_attendance(pin, photo_base64=None, log_type=None, coords=None,
     photo_file_url = None
     if photo_base64 and len(photo_base64) > 100:
         try:
-            # Handle data:image/jpeg;base64,... header
             if "," in photo_base64:
                 header, encoded = photo_base64.split(",", 1)
             else:
@@ -156,7 +161,7 @@ def mark_face_pin_attendance(pin, photo_base64=None, log_type=None, coords=None,
         "pin_verified": 1,
         "face_detected": 1 if photo_file_url else 0,
         "photo_captured": photo_file_url,
-        "device_info": device_info or frappe.local.request.headers.get("User-Agent", "Unknown Device")[:140],
+        "device_info": device_info or (getattr(frappe.local, "request", None) and frappe.local.request.headers.get("User-Agent", "Unknown Device")[:140]) or "Mobile Device",
         "ip_address": getattr(frappe.local, "request_ip", "127.0.0.1"),
         "location_coords": coords or "",
         "employee_checkin": employee_checkin_name,
@@ -167,7 +172,6 @@ def mark_face_pin_attendance(pin, photo_base64=None, log_type=None, coords=None,
     # 6. Mark Attendance in HRMS / Attendance DocType
     try:
         if frappe.db.exists("DocType", "Attendance"):
-            # Check if attendance already exists for today
             existing_att = frappe.db.get_value(
                 "Attendance",
                 {"employee": profile.employee, "attendance_date": today, "docstatus": ["!=", 2]},
@@ -179,8 +183,7 @@ def mark_face_pin_attendance(pin, photo_base64=None, log_type=None, coords=None,
                     "doctype": "Attendance",
                     "employee": profile.employee,
                     "attendance_date": today,
-                    "status": "Present",
-                    "custom_selfie_image": photo_file_url if hasattr(frappe.get_meta("Attendance"), "custom_selfie_image") else None
+                    "status": "Present"
                 })
                 att_doc.insert(ignore_permissions=True)
                 att_doc.submit()
@@ -216,12 +219,16 @@ def mark_face_pin_attendance(pin, photo_base64=None, log_type=None, coords=None,
     }
 
 @frappe.whitelist(allow_guest=True)
-def enroll_employee_face(employee, pin, photo_base64=None, admin_pin=None):
+def enroll_employee_face(
+    employee: str,
+    pin: str,
+    photo_base64: str | None = None,
+    admin_pin: str | None = None
+) -> dict:
     """Enroll or update an employee's 4-digit PIN and reference selfie photo."""
     settings = frappe.get_single("Face Attendance Settings")
     configured_admin_pin = settings.kiosk_admin_pin or "1234"
     
-    # If called without login, verify kiosk admin PIN
     if frappe.session.user == "Guest":
         if not admin_pin or str(admin_pin).strip() != str(configured_admin_pin).strip():
             frappe.response["http_status_code"] = 403
@@ -230,20 +237,18 @@ def enroll_employee_face(employee, pin, photo_base64=None, admin_pin=None):
     if not employee:
         frappe.throw(_("Employee ID is required"))
     
-    pin = str(pin).strip()
-    if not pin.isdigit() or len(pin) != 4:
+    pin_str = str(pin).strip()
+    if not pin_str.isdigit() or len(pin_str) != 4:
         frappe.throw(_("PIN must be exactly 4 digits"))
         
-    # Check if this PIN is already used by another employee
     existing_pin = frappe.db.get_value(
         "Face Attendance Profile",
-        {"secret_pin": pin, "employee": ["!=", employee], "status": "Active"},
+        {"secret_pin": pin_str, "employee": ["!=", employee], "status": "Active"},
         "employee"
     )
     if existing_pin:
         frappe.throw(_(f"This PIN is already assigned to employee {existing_pin}. Please choose a unique 4-digit PIN."))
 
-    # Save photo if provided
     face_image_url = None
     if photo_base64 and len(photo_base64) > 100:
         try:
@@ -265,12 +270,11 @@ def enroll_employee_face(employee, pin, photo_base64=None, admin_pin=None):
         except Exception as e:
             frappe.log_error(f"Error saving reference face: {e}", "Face Attendance Enrollment")
 
-    # Get or create profile
     profile_name = frappe.db.get_value("Face Attendance Profile", {"employee": employee}, "name")
     
     if profile_name:
         profile_doc = frappe.get_doc("Face Attendance Profile", profile_name)
-        profile_doc.secret_pin = pin
+        profile_doc.secret_pin = pin_str
         profile_doc.status = "Active"
         if face_image_url:
             profile_doc.face_image = face_image_url
@@ -280,14 +284,13 @@ def enroll_employee_face(employee, pin, photo_base64=None, admin_pin=None):
         profile_doc = frappe.get_doc({
             "doctype": "Face Attendance Profile",
             "employee": employee,
-            "secret_pin": pin,
+            "secret_pin": pin_str,
             "status": "Active",
             "is_registered": 1 if face_image_url else 0,
             "face_image": face_image_url or ""
         })
         profile_doc.insert(ignore_permissions=True)
 
-    # Also update employee image if not already set
     if face_image_url and frappe.db.exists("Employee", employee):
         cur_emp_image = frappe.db.get_value("Employee", employee, "image")
         if not cur_emp_image:
@@ -297,12 +300,12 @@ def enroll_employee_face(employee, pin, photo_base64=None, admin_pin=None):
 
     return {
         "success": True,
-        "message": f"Successfully enrolled {profile_doc.employee_name} ({employee}) with PIN {pin}!",
+        "message": f"Successfully enrolled {profile_doc.employee_name} ({employee}) with PIN {pin_str}!",
         "face_image": face_image_url or profile_doc.face_image
     }
 
 @frappe.whitelist(allow_guest=True)
-def get_today_kiosk_feed(limit=15):
+def get_today_kiosk_feed(limit: int = 15) -> dict:
     """Get recent check-ins for the live ticker / activity feed."""
     today = nowdate()
     logs = frappe.get_all(
@@ -316,13 +319,12 @@ def get_today_kiosk_feed(limit=15):
     for l in logs:
         l["time_formatted"] = format_time(l["timestamp"], "hh:mm a")
         if not l.get("photo_captured"):
-            # Fallback to employee profile image
             l["photo_captured"] = frappe.db.get_value("Face Attendance Profile", {"employee": l["employee"]}, "face_image") or "/assets/frappe/images/default-avatar.png"
             
     return {"success": True, "feed": logs}
 
 @frappe.whitelist(allow_guest=True)
-def get_employees_list(admin_pin=None):
+def get_employees_list(admin_pin: str | None = None) -> dict:
     """Return active employees with enrollment status for registration UI."""
     settings = frappe.get_single("Face Attendance Settings")
     configured_admin_pin = settings.kiosk_admin_pin or "1234"
