@@ -1,0 +1,10 @@
+{
+ "creation": "2026-10-01 12:00:00.000000",
+ "doctype": "Page",
+ "module": "Face Attendance",
+ "name": "face_attendance_kiosk",
+ "page_name": "face_attendance_kiosk",
+ "title": "Face Attendance Kiosk",
+ "standard": "Yes",
+ "roles": []
+}
