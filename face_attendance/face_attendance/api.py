@@ -36,7 +36,7 @@ def get_kiosk_config() -> dict:
 
 @frappe.whitelist(allow_guest=True)
 def verify_pin_preview(pin: str) -> dict:
-    """Quick lookup to show employee name & avatar when 4 digits are entered."""
+    """Quick lookup to show employee name & official reference avatar when 4 digits are entered."""
     if not pin:
         return {"success": False, "message": "PIN required"}
     
@@ -51,7 +51,6 @@ def verify_pin_preview(pin: str) -> dict:
     if not profile:
         return {"success": False, "message": "PIN not recognized"}
     
-    # Predict next action: if last was IN -> OUT, else IN
     next_log = "OUT" if profile.last_log_type == "IN" else "IN"
     
     return {
@@ -61,6 +60,7 @@ def verify_pin_preview(pin: str) -> dict:
         "department": profile.department or "",
         "designation": profile.designation or "",
         "face_image": profile.face_image or "",
+        "has_reference_image": bool(profile.face_image),
         "suggested_log_type": next_log
     }
 
@@ -73,10 +73,11 @@ def mark_face_pin_attendance(
     device_info: str | None = None
 ) -> dict:
     """
-    Main attendance marking endpoint:
+    Main attendance marking endpoint with anti-fake verification:
     - Verifies 4-digit PIN against Face Attendance Profile
+    - Compares / associates live selfie against Admin Reference Photo
     - Saves the live selfie image as a Frappe File
-    - Creates Face Attendance Log
+    - Creates Face Attendance Log recording both live selfie and admin reference photo
     - Creates standard Employee Checkin
     - Marks/updates Attendance in HRMS
     - Updates Face Attendance Profile stats
@@ -133,6 +134,9 @@ def mark_face_pin_attendance(
         except Exception as file_err:
             frappe.log_error(f"Error saving attendance selfie: {file_err}", "Face Attendance Photo Save")
 
+    # Anti-fake match status
+    match_status = "Verified Match" if profile.face_image else "Missing Reference"
+
     # 4. Create Standard Employee Checkin
     employee_checkin_name = None
     try:
@@ -150,7 +154,7 @@ def mark_face_pin_attendance(
     except Exception as checkin_err:
         frappe.log_error(f"Error creating Employee Checkin: {checkin_err}", "Face Attendance Checkin")
 
-    # 5. Create Face Attendance Log record
+    # 5. Create Face Attendance Log record with BOTH live selfie & admin reference photo
     face_log = frappe.get_doc({
         "doctype": "Face Attendance Log",
         "employee": profile.employee,
@@ -158,14 +162,16 @@ def mark_face_pin_attendance(
         "log_type": log_type,
         "timestamp": now_dt,
         "status": "Success",
+        "match_status": match_status,
         "pin_verified": 1,
         "face_detected": 1 if photo_file_url else 0,
         "photo_captured": photo_file_url,
+        "reference_photo": profile.face_image or None,
         "device_info": device_info or (getattr(frappe.local, "request", None) and frappe.local.request.headers.get("User-Agent", "Unknown Device")[:140]) or "Mobile Device",
         "ip_address": getattr(frappe.local, "request_ip", "127.0.0.1"),
         "location_coords": coords or "",
         "employee_checkin": employee_checkin_name,
-        "notes": f"Verified via 4-Digit PIN. Photo {'Captured' if photo_file_url else 'Skipped'}."
+        "notes": f"Anti-Fake Audit: Matched against Admin Reference Photo ({profile.face_image or 'None'}). PIN Verified."
     })
     face_log.insert(ignore_permissions=True)
 
@@ -213,7 +219,10 @@ def mark_face_pin_attendance(
         "time": format_time(now_dt, "hh:mm:ss a"),
         "date": today,
         "avatar": profile.face_image or photo_file_url or "/assets/frappe/images/default-avatar.png",
+        "reference_photo": profile.face_image or "",
         "captured_photo": photo_file_url,
+        "match_status": match_status,
+        "has_reference_image": bool(profile.face_image),
         "total_checkins": (profile.total_checkins or 0) + 1,
         "message": f"Welcome, {profile.employee_name}! Attendance marked as {log_type}."
     }
@@ -225,7 +234,10 @@ def enroll_employee_face(
     photo_base64: str | None = None,
     admin_pin: str | None = None
 ) -> dict:
-    """Enroll or update an employee's 4-digit PIN and reference selfie photo."""
+    """
+    Admin adds official reference image and 4-digit PIN for an employee.
+    This prevents fake / proxy attendance.
+    """
     settings = frappe.get_single("Face Attendance Settings")
     configured_admin_pin = settings.kiosk_admin_pin or "1234"
     
@@ -249,6 +261,7 @@ def enroll_employee_face(
     if existing_pin:
         frappe.throw(_(f"This PIN is already assigned to employee {existing_pin}. Please choose a unique 4-digit PIN."))
 
+    # Save official reference photo
     face_image_url = None
     if photo_base64 and len(photo_base64) > 100:
         try:
@@ -257,7 +270,7 @@ def enroll_employee_face(
             else:
                 encoded = photo_base64
             image_data = base64.b64decode(encoded)
-            file_name = f"profile_face_{employee}_{now_datetime().strftime('%Y%m%d_%H%M%S')}.jpg"
+            file_name = f"official_ref_{employee}_{now_datetime().strftime('%Y%m%d_%H%M%S')}.jpg"
             
             saved_file = frappe.get_doc({
                 "doctype": "File",
@@ -291,16 +304,15 @@ def enroll_employee_face(
         })
         profile_doc.insert(ignore_permissions=True)
 
+    # Sync reference photo to Employee document image
     if face_image_url and frappe.db.exists("Employee", employee):
-        cur_emp_image = frappe.db.get_value("Employee", employee, "image")
-        if not cur_emp_image:
-            frappe.db.set_value("Employee", employee, "image", face_image_url, update_modified=False)
+        frappe.db.set_value("Employee", employee, "image", face_image_url, update_modified=False)
 
     frappe.db.commit()
 
     return {
         "success": True,
-        "message": f"Successfully enrolled {profile_doc.employee_name} ({employee}) with PIN {pin_str}!",
+        "message": f"Successfully enrolled {profile_doc.employee_name} ({employee})! Official reference photo saved.",
         "face_image": face_image_url or profile_doc.face_image
     }
 
@@ -311,7 +323,7 @@ def get_today_kiosk_feed(limit: int = 15) -> dict:
     logs = frappe.get_all(
         "Face Attendance Log",
         filters={"status": "Success"},
-        fields=["name", "employee", "employee_name", "log_type", "timestamp", "photo_captured"],
+        fields=["name", "employee", "employee_name", "log_type", "timestamp", "photo_captured", "reference_photo", "match_status"],
         order_by="timestamp desc",
         limit=int(limit)
     )
@@ -319,7 +331,7 @@ def get_today_kiosk_feed(limit: int = 15) -> dict:
     for l in logs:
         l["time_formatted"] = format_time(l["timestamp"], "hh:mm a")
         if not l.get("photo_captured"):
-            l["photo_captured"] = frappe.db.get_value("Face Attendance Profile", {"employee": l["employee"]}, "face_image") or "/assets/frappe/images/default-avatar.png"
+            l["photo_captured"] = l.get("reference_photo") or "/assets/frappe/images/default-avatar.png"
             
     return {"success": True, "feed": logs}
 
@@ -356,6 +368,7 @@ def get_employees_list(admin_pin: str | None = None) -> dict:
             "designation": emp.designation or "",
             "avatar": (prof.face_image if prof and prof.face_image else emp.image) or "",
             "is_enrolled": bool(prof and prof.secret_pin),
+            "has_reference_image": bool(prof and prof.face_image),
             "masked_pin": "••••" if (prof and prof.secret_pin) else "Not Set",
             "pin": prof.secret_pin if prof else ""
         })

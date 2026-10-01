@@ -15,11 +15,14 @@
   "timestamp",
   "col_break_1",
   "status",
+  "match_status",
   "pin_verified",
   "face_detected",
   "employee_checkin",
   "sec_photo",
   "photo_captured",
+  "col_break_photo",
+  "reference_photo",
   "col_break_2",
   "device_info",
   "ip_address",
@@ -139,6 +142,25 @@
    "fieldname": "notes",
    "fieldtype": "Small Text",
    "label": "Verification Notes"
+  },
+  {
+   "default": "Verified Match",
+   "fieldname": "match_status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Face Verification Status",
+   "options": "Verified Match\nReview Needed\nMissing Reference"
+  },
+  {
+   "fieldname": "col_break_photo",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "reference_photo",
+   "fieldtype": "Attach Image",
+   "in_list_view": 1,
+   "label": "Admin Reference Photo"
   }
  ],
  "links": [],
