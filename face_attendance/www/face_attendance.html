@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Face & PIN Attendance</title>
+  <title>SmartFace™ AI Attendance</title>
   
   <!-- Premium Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
   
   <!-- Vue 3 CDN -->
   <script src="https://unpkg.com/vue@3.4.21/dist/vue.global.prod.js"></script>
@@ -21,24 +21,37 @@
 
   <style>
     :root {
-      --bg-page: #f8fafc;
-      --surface-card: #ffffff;
-      --border-subtle: #e2e8f0;
+      --bg-aura-1: #e0e7ff;
+      --bg-aura-2: #ecfdf5;
+      --bg-aura-3: #fef3c7;
+      --surface-glass: rgba(255, 255, 255, 0.88);
+      --surface-glass-subtle: rgba(248, 250, 252, 0.75);
+      --border-glass: rgba(255, 255, 255, 0.9);
+      --border-subtle: rgba(226, 232, 240, 0.8);
+      
       --text-dark: #0f172a;
+      --text-body: #334155;
       --text-muted: #64748b;
+      
       --primary: #2563eb;
-      --primary-hover: #1d4ed8;
+      --primary-glow: rgba(37, 99, 235, 0.35);
+      --cyan: #06b6d4;
+      --cyan-glow: rgba(6, 182, 212, 0.35);
+      
       --success: #059669;
       --success-light: #ecfdf5;
       --success-border: #a7f3d0;
+      
       --amber: #d97706;
       --amber-light: #fffbeb;
       --amber-border: #fde68a;
-      --danger: #dc2626;
-      --danger-light: #fef2f2;
-      --danger-border: #fecaca;
-      --radius-card: 20px;
-      --radius-btn: 12px;
+      
+      --danger: #e11d48;
+      --danger-light: #fff1f2;
+      --danger-border: #fecdd3;
+      
+      --radius-kiosk: 24px;
+      --radius-btn: 14px;
       --radius-full: 9999px;
     }
 
@@ -56,20 +69,82 @@
     }
 
     body {
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      background: radial-gradient(circle at 50% 0%, #ffffff 0%, #f1f5f9 100%);
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      background-color: #f8fafc;
       color: var(--text-dark);
       display: flex;
       flex-direction: column;
       overflow-x: hidden;
+      position: relative;
     }
 
-    /* Compact Mobile Header */
+    /* Ambient Background Aura Spheres */
+    .ambient-mesh {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .aura-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(70px);
+      opacity: 0.65;
+      animation: floatAura 12s ease-in-out infinite alternate;
+    }
+
+    .aura-1 {
+      width: 280px;
+      height: 280px;
+      background: linear-gradient(135deg, #c7d2fe, #93c5fd);
+      top: -80px;
+      left: -60px;
+    }
+
+    .aura-2 {
+      width: 260px;
+      height: 260px;
+      background: linear-gradient(135deg, #a7f3d0, #6ee7b7);
+      bottom: -60px;
+      right: -50px;
+      animation-delay: -6s;
+    }
+
+    .aura-3 {
+      width: 180px;
+      height: 180px;
+      background: linear-gradient(135deg, #fed7aa, #fef08a);
+      top: 40%;
+      left: 60%;
+      opacity: 0.35;
+      animation-delay: -3s;
+    }
+
+    @keyframes floatAura {
+      0% { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(25px, 20px) scale(1.08); }
+    }
+
+    /* App Shell */
+    #app {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Creative Glass Header */
     header {
       width: 100%;
       max-width: 440px;
       margin: 0 auto;
-      padding: 12px 16px 6px;
+      padding: 10px 16px 4px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -79,898 +154,1141 @@
     .brand-wrap {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
 
-    .brand-icon {
-      width: 32px;
-      height: 32px;
-      background: linear-gradient(135deg, #1e293b, #0f172a);
+    .brand-badge {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #2563eb, #06b6d4);
       color: #ffffff;
-      border-radius: 8px;
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
     }
 
     .brand-title {
       font-family: 'Outfit', sans-serif;
-      font-size: 1.05rem;
-      font-weight: 700;
+      font-size: 1.12rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
       color: var(--text-dark);
-      line-height: 1.1;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .brand-ai-chip {
+      font-size: 0.6rem;
+      font-weight: 800;
+      padding: 1px 5px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #2563eb, #06b6d4);
+      color: #ffffff;
+      letter-spacing: 0.05em;
     }
 
     .brand-sub {
       font-size: 0.68rem;
       color: var(--text-muted);
-      font-weight: 500;
+      font-weight: 600;
+      letter-spacing: -0.01em;
     }
 
-    .clock-box {
+    .clock-pill {
+      background: var(--surface-glass);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-full);
+      padding: 4px 12px;
       text-align: right;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
     }
 
     .clock-time {
-      font-family: 'Outfit', monospace;
-      font-size: 0.95rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.88rem;
       font-weight: 700;
       color: var(--text-dark);
+      line-height: 1.1;
     }
 
     .clock-date {
-      font-size: 0.65rem;
+      font-size: 0.62rem;
       color: var(--text-muted);
+      font-weight: 600;
     }
 
-    /* Main Container (Fits 100% on Mobile Viewport) */
+    /* Main Container */
     main {
       flex: 1;
       width: 100%;
       max-width: 440px;
       margin: 0 auto;
-      padding: 4px 14px 16px;
+      padding: 4px 14px 14px;
       display: flex;
       flex-direction: column;
       justify-content: center;
       min-height: 0;
     }
 
-    /* Step Indicator */
-    .step-bar {
+    /* Step Capsule */
+    .step-capsule {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
+      gap: 8px;
       margin-bottom: 8px;
       flex-shrink: 0;
     }
 
-    .step-pill {
+    .step-node {
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
       padding: 4px 10px;
       border-radius: var(--radius-full);
       font-size: 0.72rem;
       font-weight: 700;
-      background: #f1f5f9;
+      background: var(--surface-glass);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border-subtle);
       color: var(--text-muted);
+      transition: all 0.2s ease;
     }
 
-    .step-pill.active {
+    .step-node.active {
       background: #eff6ff;
+      border-color: #bfdbfe;
       color: var(--primary);
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.12);
     }
 
-    .step-pill.done {
+    .step-node.done {
       background: var(--success-light);
+      border-color: var(--success-border);
       color: var(--success);
     }
 
-    .step-dot {
-      width: 5px;
-      height: 5px;
+    .node-num {
+      width: 15px;
+      height: 15px;
       border-radius: 50%;
       background: currentColor;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.6rem;
+      font-weight: 800;
     }
 
-    /* Segmented Check In / Check Out Toggle */
-    .mode-bar {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6px;
-      background: #f1f5f9;
-      padding: 3px;
-      border-radius: var(--radius-btn);
-      margin-bottom: 10px;
+    .step-node.active .node-num {
+      background: var(--primary);
+      color: #ffffff;
+    }
+
+    .step-node.done .node-num {
+      background: var(--success);
+      color: #ffffff;
+    }
+
+    /* Primary Futuristic Glass Card */
+    .kiosk-card {
+      background: var(--surface-glass);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1.5px solid rgba(255, 255, 255, 0.95);
+      border-radius: var(--radius-kiosk);
+      box-shadow: 0 16px 36px -12px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(226, 232, 240, 0.6);
+      padding: 14px 16px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      animation: cardIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
+      position: relative;
+    }
+
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(8px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* SMART DIRECTION BAR (Solves employees forgetting check in/out) */
+    .smart-mode-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
       flex-shrink: 0;
     }
 
-    .mode-btn {
-      padding: 8px 12px;
-      border-radius: 9px;
+    .mode-segments {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr 1fr;
+      gap: 5px;
+      background: rgba(241, 245, 249, 0.85);
+      padding: 3px;
+      border-radius: var(--radius-btn);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .seg-btn {
+      padding: 7px 10px;
+      border-radius: 10px;
       border: none;
       background: transparent;
       color: var(--text-muted);
       font-family: 'Outfit', sans-serif;
       font-weight: 700;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
-      transition: all 0.15s ease;
+      gap: 5px;
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    .mode-btn.active-in {
+    .seg-btn:active {
+      transform: scale(0.96);
+    }
+
+    .seg-btn.active-auto {
+      background: #ffffff;
+      color: #2563eb;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+    }
+
+    .seg-btn.active-in {
       background: #ffffff;
       color: var(--success);
-      box-shadow: 0 2px 6px rgba(5, 150, 105, 0.15);
+      box-shadow: 0 2px 8px rgba(5, 150, 105, 0.2);
     }
 
-    .mode-btn.active-out {
+    .seg-btn.active-out {
       background: #ffffff;
       color: var(--amber);
-      box-shadow: 0 2px 6px rgba(217, 119, 6, 0.15);
+      box-shadow: 0 2px 8px rgba(217, 119, 6, 0.2);
     }
 
-    .mode-indicator-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: currentColor;
-    }
-
-    /* Primary Kiosk Card */
-    .kiosk-card {
-      background: var(--surface-card);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-card);
-      box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.08);
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      animation: cardIn 0.2s ease;
-      overflow: hidden;
-    }
-
-    @keyframes cardIn {
-      from { opacity: 0; transform: translateY(6px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Compact Mobile Camera Viewport */
-    .cam-box {
-      position: relative;
-      width: 100%;
-      max-width: 280px;
-      height: 210px;
-      margin: 0 auto;
-      border-radius: 16px;
-      overflow: hidden;
-      background: #0f172a;
+    /* Smart Helper Banner */
+    .smart-helper-pill {
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.4);
+      gap: 5px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #2563eb;
+      background: #eff6ff;
+      border: 1px solid #dbeafe;
+      border-radius: var(--radius-full);
+      padding: 3px 8px;
     }
 
-    #camera-video, #canvas-snap {
+    /* ============================================================ */
+    /* FUTURISTIC CYBER-BIOMETRIC SCANNER VIEWPORT                 */
+    /* ============================================================ */
+    .scanner-viewport-wrap {
+      position: relative;
+      width: 100%;
+      max-width: 270px;
+      height: 200px;
+      margin: 0 auto;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.2), 0 0 0 1px rgba(6, 182, 212, 0.4);
+      background: #000000;
+    }
+
+    #camera-video {
       width: 100%;
       height: 100%;
       object-fit: cover;
       transform: scaleX(-1);
     }
 
-    .cam-chip {
+    /* Cyber Frame Holographic Border */
+    .scanner-viewport-wrap::before {
+      content: '';
       position: absolute;
-      top: 10px;
-      left: 10px;
-      background: rgba(15, 23, 42, 0.75);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
+      inset: 0;
+      border-radius: 20px;
+      border: 2px solid transparent;
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.8), rgba(37, 99, 235, 0.6), rgba(16, 185, 129, 0.8)) border-box;
+      -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: destination-out;
+      mask-composite: exclude;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    /* 4 Viewfinder Corner Brackets */
+    .corner-bracket {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border: 2.5px solid #38bdf8;
+      pointer-events: none;
+      z-index: 6;
+      filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.8));
+    }
+
+    .corner-tl { top: 12px; left: 12px; border-right: none; border-bottom: none; border-top-left-radius: 6px; }
+    .corner-tr { top: 12px; right: 12px; border-left: none; border-bottom: none; border-top-right-radius: 6px; }
+    .corner-bl { bottom: 12px; left: 12px; border-right: none; border-top: none; border-bottom-left-radius: 6px; }
+    .corner-br { bottom: 12px; right: 12px; border-left: none; border-top: none; border-bottom-right-radius: 6px; }
+
+    /* Moving Cyber Laser Scanline Beam */
+    .cyber-laser-beam {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #38bdf8, #a7f3d0, #38bdf8, transparent);
+      box-shadow: 0 0 14px 2px rgba(56, 189, 248, 0.9), 0 0 25px 4px rgba(6, 182, 212, 0.5);
+      z-index: 4;
+      animation: cyberScan 2.4s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+
+    @keyframes cyberScan {
+      0% { top: 10%; opacity: 0.3; }
+      20% { opacity: 1; }
+      80% { opacity: 1; }
+      100% { top: 88%; opacity: 0.3; }
+    }
+
+    /* Holographic Facial Oval Guide */
+    .holo-oval-target {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 110px;
+      height: 145px;
+      border: 1.5px dashed rgba(255, 255, 255, 0.65);
+      border-radius: 50% / 45%;
+      pointer-events: none;
+      z-index: 3;
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
+      animation: pulseTarget 2.5s ease-in-out infinite;
+    }
+
+    @keyframes pulseTarget {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.65; }
+      50% { transform: translate(-50%, -50%) scale(1.04); opacity: 0.95; }
+    }
+
+    /* Viewport Floating Status Chip */
+    .hud-chip {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.25);
       color: #ffffff;
-      padding: 3px 8px;
       border-radius: var(--radius-full);
-      font-size: 0.68rem;
+      padding: 3px 8px;
+      font-size: 0.62rem;
       font-weight: 700;
+      letter-spacing: 0.04em;
       display: flex;
       align-items: center;
       gap: 5px;
-      z-index: 10;
+      z-index: 6;
     }
 
-    .pulse-dot {
+    .hud-pulse {
       width: 6px;
       height: 6px;
       border-radius: 50%;
       background: #10b981;
-      animation: blink 1.4s infinite;
+      box-shadow: 0 0 8px #10b981;
+      animation: blinkPulse 1.2s infinite;
     }
 
-    @keyframes blink {
+    @keyframes blinkPulse {
       0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
+      50% { opacity: 0.4; }
     }
 
-    .flip-camera-btn {
+    /* Flip Camera Button */
+    .flip-btn {
       position: absolute;
-      top: 10px;
-      right: 10px;
-      width: 32px;
-      height: 32px;
+      top: 8px;
+      right: 8px;
+      width: 28px;
+      height: 28px;
       border-radius: 50%;
-      background: rgba(255, 255, 255, 0.88);
-      border: none;
-      color: var(--text-dark);
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #ffffff;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      z-index: 10;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+      z-index: 6;
+      transition: transform 0.15s ease;
     }
 
-    /* Face Oval Overlay */
-    .oval-guide {
-      position: absolute;
-      width: 150px;
-      height: 190px;
-      border: 2px dashed rgba(255, 255, 255, 0.65);
-      border-radius: 50% 50% 48% 48%;
-      pointer-events: none;
-      z-index: 5;
-      box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.35);
+    .flip-btn:active {
+      transform: scale(0.9);
     }
 
-    .oval-guide::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 15%;
-      right: 15%;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, #38bdf8, transparent);
-      box-shadow: 0 0 8px #38bdf8;
-      animation: scanSweep 2s infinite ease-in-out alternate;
-    }
-
-    @keyframes scanSweep {
-      0% { top: 10%; opacity: 0.2; }
-      50% { opacity: 1; }
-      100% { top: 90%; opacity: 0.2; }
-    }
-
-    .cam-prompt {
+    /* Prompt Section */
+    .prompt-block {
       text-align: center;
-      padding: 2px 0;
+      margin: 2px 0;
     }
 
-    .cam-prompt-title {
+    .prompt-title {
       font-family: 'Outfit', sans-serif;
       font-size: 1.05rem;
-      font-weight: 700;
+      font-weight: 800;
       color: var(--text-dark);
+      letter-spacing: -0.01em;
     }
 
-    .cam-prompt-sub {
-      font-size: 0.76rem;
+    .prompt-sub {
+      font-size: 0.74rem;
       color: var(--text-muted);
       margin-top: 1px;
     }
 
-    /* Action Buttons */
-    .btn-punch-in {
+    /* Creative Hologram Action Button */
+    .btn-action-hero {
       width: 100%;
-      padding: 13px;
-      background: linear-gradient(135deg, #059669, #047857);
-      color: #ffffff;
-      border: none;
+      padding: 13px 18px;
       border-radius: var(--radius-btn);
+      border: none;
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 50%, #06b6d4 100%);
+      background-size: 200% auto;
+      color: #ffffff;
       font-family: 'Outfit', sans-serif;
+      font-weight: 800;
       font-size: 0.98rem;
-      font-weight: 700;
+      letter-spacing: 0.02em;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      box-shadow: 0 4px 14px rgba(5, 150, 105, 0.25);
+      box-shadow: 0 8px 20px -4px rgba(37, 99, 235, 0.45);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
     }
 
-    .btn-punch-out {
-      width: 100%;
-      padding: 13px;
-      background: linear-gradient(135deg, #d97706, #b45309);
-      color: #ffffff;
-      border: none;
-      border-radius: var(--radius-btn);
-      font-family: 'Outfit', sans-serif;
-      font-size: 0.98rem;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      box-shadow: 0 4px 14px rgba(217, 119, 6, 0.25);
+    .btn-action-hero::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(60deg, transparent, rgba(255,255,255,0.25), transparent);
+      transform: rotate(30deg);
+      animation: shimmerBtn 3.5s infinite;
     }
 
-    /* STEP 2: PIN Screen */
-    .selfie-status-row {
+    @keyframes shimmerBtn {
+      0% { transform: translateX(-100%) rotate(30deg); }
+      30%, 100% { transform: translateX(100%) rotate(30deg); }
+    }
+
+    .btn-action-hero:active {
+      transform: scale(0.97);
+      box-shadow: 0 4px 12px -2px rgba(37, 99, 235, 0.4);
+    }
+
+    .btn-action-hero.mode-in {
+      background: linear-gradient(135deg, #059669 0%, #047857 50%, #10b981 100%);
+      box-shadow: 0 8px 20px -4px rgba(5, 150, 105, 0.45);
+    }
+
+    .btn-action-hero.mode-out {
+      background: linear-gradient(135deg, #d97706 0%, #b45309 50%, #f59e0b 100%);
+      box-shadow: 0 8px 20px -4px rgba(217, 119, 6, 0.45);
+    }
+
+    /* ============================================================ */
+    /* STEP 2: TACTILE FUTURISTIC PIN KEYPAD                       */
+    /* ============================================================ */
+    .selfie-card-banner {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: #f8fafc;
+      background: var(--surface-glass-subtle);
       border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-btn);
-      padding: 8px 12px;
+      border-radius: 14px;
+      padding: 6px 10px;
     }
 
-    .selfie-mini-group {
+    .selfie-badge-group {
       display: flex;
       align-items: center;
       gap: 8px;
     }
 
-    .selfie-mini-thumb {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
+    .selfie-avatar-thumb {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
       object-fit: cover;
-      border: 2px solid #10b981;
+      border: 2px solid #38bdf8;
+      box-shadow: 0 2px 6px rgba(56, 189, 248, 0.3);
     }
 
-    .selfie-status-badge {
-      font-size: 0.68rem;
-      font-weight: 700;
-      padding: 2px 7px;
-      border-radius: var(--radius-full);
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .badge-in {
-      background: var(--success-light);
-      color: var(--success);
-      border: 1px solid var(--success-border);
-    }
-
-    .badge-out {
-      background: var(--amber-light);
-      color: var(--amber);
-      border: 1px solid var(--amber-border);
-    }
-
-    .retake-btn {
-      background: #ffffff;
+    .retake-pill {
+      background: #f1f5f9;
       border: 1px solid var(--border-subtle);
-      color: var(--text-muted);
-      font-size: 0.74rem;
-      font-weight: 600;
-      padding: 5px 10px;
+      color: var(--text-body);
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 4px 10px;
       border-radius: var(--radius-full);
       cursor: pointer;
       display: flex;
       align-items: center;
       gap: 4px;
-    }
-
-    /* PIN Dots */
-    .pin-dots {
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-      margin: 4px 0;
-    }
-
-    .pin-dot {
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background: #f1f5f9;
-      border: 2px solid #cbd5e1;
       transition: all 0.15s ease;
     }
 
-    .pin-dot.filled {
-      background: var(--primary);
-      border-color: var(--primary);
-      transform: scale(1.15);
-      box-shadow: 0 0 8px rgba(37, 99, 235, 0.35);
+    .retake-pill:active {
+      transform: scale(0.94);
+      background: #e2e8f0;
     }
 
-    /* Keypad Grid (Compact for Mobile) */
-    .keypad-grid {
+    /* Smart Punch Auto-Direction Banner (Step 2) */
+    .smart-detected-banner {
+      background: linear-gradient(135deg, #eff6ff, #f0fdf4);
+      border: 1.5px solid #bfdbfe;
+      border-radius: 12px;
+      padding: 6px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .detected-text {
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: #1e3a8a;
+    }
+
+    .toggle-dir-btn {
+      background: #ffffff;
+      border: 1px solid #93c5fd;
+      border-radius: var(--radius-full);
+      padding: 3px 8px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #2563eb;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .toggle-dir-btn:active {
+      background: #dbeafe;
+    }
+
+    /* Glowing Neon PIN Beads */
+    .pin-beads-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 14px;
+      margin: 2px 0 6px;
+    }
+
+    .pin-bead {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid #cbd5e1;
+      background: transparent;
+      transition: all 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .pin-bead.filled {
+      border-color: #2563eb;
+      background: #2563eb;
+      transform: scale(1.25);
+      box-shadow: 0 0 10px rgba(37, 99, 235, 0.6);
+    }
+
+    /* High-Tech Tactile Keypad Grid */
+    .tactile-keypad-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 8px;
+      max-width: 290px;
+      margin: 0 auto;
+      width: 100%;
     }
 
-    .key-btn {
-      height: 48px;
+    .tactile-key {
       background: #ffffff;
-      border: 1.5px solid var(--border-subtle);
-      border-radius: 10px;
+      border: 1px solid rgba(226, 232, 240, 0.85);
+      border-radius: 14px;
+      padding: 8px 4px;
       cursor: pointer;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      color: var(--text-dark);
-      transition: all 0.1s ease;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04), 0 1px 1px rgba(0, 0, 0, 0.02);
+      transition: all 0.1s cubic-bezier(0.16, 1, 0.3, 1);
+      height: 48px;
     }
 
-    .key-btn:active {
-      transform: scale(0.95);
-      background: #e2e8f0;
+    .tactile-key:active {
+      transform: scale(0.92);
+      background: #f1f5f9;
+      box-shadow: none;
     }
 
-    .key-num {
+    .key-digit {
       font-family: 'Outfit', sans-serif;
-      font-size: 1.35rem;
-      font-weight: 700;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--text-dark);
       line-height: 1;
     }
 
-    .key-sub {
+    .key-letters {
       font-size: 0.58rem;
-      font-weight: 600;
+      font-weight: 700;
       color: var(--text-muted);
       letter-spacing: 0.1em;
+      margin-top: 1px;
     }
 
-    .key-util {
+    .key-action {
       background: #f8fafc;
-      color: var(--text-muted);
+      color: var(--text-body);
     }
 
-    .key-util:active {
-      background: #fee2e2;
-      color: var(--danger);
-    }
-
-    /* Mismatch / Security Error Card */
-    .security-error-card {
-      background: var(--danger-light);
-      border: 1.5px solid var(--danger-border);
-      border-radius: var(--radius-btn);
-      padding: 14px;
+    /* ============================================================ */
+    /* STEP 3: DIGITAL EMPLOYEE ID PASS (SUCCESS)                   */
+    /* ============================================================ */
+    .digital-pass-card {
       display: flex;
       flex-direction: column;
       align-items: center;
       text-align: center;
-      gap: 8px;
-      color: var(--danger);
-      animation: shake 0.35s ease;
+      gap: 10px;
+      animation: cardIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      20%, 60% { transform: translateX(-6px); }
-      40%, 80% { transform: translateX(6px); }
-    }
-
-    .security-error-title {
-      font-family: 'Outfit', sans-serif;
-      font-size: 1.05rem;
-      font-weight: 800;
-    }
-
-    .security-error-desc {
-      font-size: 0.78rem;
-      line-height: 1.4;
-      color: #991b1b;
-    }
-
-    /* Confirmation Card */
-    .success-card {
-      text-align: center;
-      padding: 6px 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .success-icon {
+    .verified-halo {
       width: 54px;
       height: 54px;
       border-radius: 50%;
-      background: var(--success-light);
-      border: 2px solid var(--success-border);
-      color: var(--success);
+      background: #ecfdf5;
+      border: 2.5px solid #10b981;
+      color: #059669;
       display: flex;
       align-items: center;
       justify-content: center;
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.35);
+      position: relative;
     }
 
-    .success-name {
+    .verified-halo::after {
+      content: '';
+      position: absolute;
+      inset: -5px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(16, 185, 129, 0.4);
+      animation: rippleHalo 2s infinite;
+    }
+
+    @keyframes rippleHalo {
+      0% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(1.25); opacity: 0; }
+    }
+
+    .pass-name {
       font-family: 'Outfit', sans-serif;
-      font-size: 1.3rem;
-      font-weight: 700;
+      font-size: 1.35rem;
+      font-weight: 800;
       color: var(--text-dark);
+      letter-spacing: -0.01em;
     }
 
-    .success-pill {
+    .pass-role {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .punch-direction-badge {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 5px 14px;
+      padding: 5px 16px;
       border-radius: var(--radius-full);
-      font-size: 0.82rem;
-      font-weight: 700;
-      border: 1px solid transparent;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
     }
 
-    .pill-in {
-      background: var(--success-light);
-      color: var(--success);
-      border-color: var(--success-border);
+    .badge-punch-in {
+      background: #ecfdf5;
+      color: #059669;
+      border: 1px solid #a7f3d0;
+      box-shadow: 0 2px 8px rgba(5, 150, 105, 0.15);
     }
 
-    .pill-out {
-      background: var(--amber-light);
-      color: var(--amber);
-      border-color: var(--amber-border);
+    .badge-punch-out {
+      background: #fffbeb;
+      color: #d97706;
+      border: 1px solid #fde68a;
+      box-shadow: 0 2px 8px rgba(217, 119, 6, 0.15);
     }
 
-    /* Side-by-Side Dual Audit */
-    .dual-audit-box {
+    /* Dual Master Biometric Verification Grid */
+    .dual-biometric-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
       width: 100%;
       background: #f8fafc;
       border: 1px solid var(--border-subtle);
-      border-radius: 14px;
+      border-radius: 16px;
       padding: 10px;
     }
 
-    .audit-col {
+    .bio-col {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 4px;
+      gap: 5px;
     }
 
-    .audit-tag {
+    .bio-tag {
       font-size: 0.65rem;
-      font-weight: 700;
+      font-weight: 800;
       text-transform: uppercase;
-      padding: 2px 6px;
+      letter-spacing: 0.04em;
+      padding: 2px 8px;
       border-radius: var(--radius-full);
     }
 
-    .tag-live {
+    .tag-sensor {
       background: #eff6ff;
-      color: var(--primary);
+      color: #2563eb;
       border: 1px solid #bfdbfe;
     }
 
-    .tag-admin {
-      background: var(--success-light);
-      color: var(--success);
-      border: 1px solid var(--success-border);
+    .tag-enrolled {
+      background: #ecfdf5;
+      color: #059669;
+      border: 1px solid #a7f3d0;
     }
 
-    .audit-thumb-wrap {
+    .bio-thumb-wrap {
       width: 100%;
-      aspect-ratio: 1;
+      height: 95px;
       border-radius: 10px;
       overflow: hidden;
-      border: 2px solid #ffffff;
-      background: #e2e8f0;
+      border: 2px solid #e2e8f0;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
+      background: #000000;
     }
 
-    .audit-thumb-wrap img {
+    .bio-thumb-wrap img {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
 
+    .bio-thumb-wrap.verified-border {
+      border-color: #10b981;
+    }
+
+    /* Shift Intel Pill */
+    .shift-intel-chip {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: var(--radius-full);
+      padding: 4px 12px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-body);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
     /* Toast Notification */
-    .toast-pill {
+    .toast-capsule {
       position: fixed;
       bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
-      background: #0f172a;
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(12px);
       color: #ffffff;
-      padding: 8px 18px;
+      padding: 8px 16px;
       border-radius: var(--radius-full);
       font-size: 0.8rem;
       font-weight: 600;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
-      z-index: 200;
       display: flex;
       align-items: center;
-      gap: 6px;
-      white-space: nowrap;
+      gap: 8px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      z-index: 100;
+      animation: toastSlide 0.2s ease;
+    }
+
+    @keyframes toastSlide {
+      from { opacity: 0; transform: translate(-50%, 10px); }
+      to { opacity: 1; transform: translate(-50%, 0); }
     }
   </style>
 </head>
 <body>
+
+  <!-- Ambient Light Mesh (Clean, Soft Pastel Glows) -->
+  <div class="ambient-mesh">
+    <div class="aura-orb aura-1"></div>
+    <div class="aura-orb aura-2"></div>
+    <div class="aura-orb aura-3"></div>
+  </div>
+
 {% raw %}
   <div id="app">
-    <!-- Header -->
+    <!-- Top Brand & Time Bar -->
     <header>
       <div class="brand-wrap">
-        <div class="brand-icon">
+        <div class="brand-badge">
           <i data-lucide="scan-face" style="width: 20px; height: 20px;"></i>
         </div>
         <div>
-          <div class="brand-title">Smart Attendance</div>
-          <div class="brand-sub">Biometric Security Engine</div>
+          <div class="brand-title">
+            SmartFace
+            <span class="brand-ai-chip">AI PRO</span>
+          </div>
+          <div class="brand-sub">Neural Biometric Attendance</div>
         </div>
       </div>
 
-      <div class="clock-box">
+      <div class="clock-pill">
         <div class="clock-time">{{ currentTimeStr }}</div>
         <div class="clock-date">{{ currentDateStr }}</div>
       </div>
     </header>
 
-    <!-- Main Container -->
     <main>
-      <!-- Step Indicator -->
-      <div class="step-bar" v-if="!attendanceSuccess && !securityError">
-        <div class="step-pill" :class="{ active: currentStep === 1, done: currentStep > 1 }">
-          <span class="step-dot"></span>
-          <span>1. Scan Face</span>
+      <!-- Step Capsule Indicator -->
+      <div class="step-capsule">
+        <div class="step-node" :class="{ active: currentStep === 1, done: currentStep > 1 }">
+          <span class="node-num">1</span>
+          <span>Scan Face</span>
         </div>
-        <i data-lucide="chevron-right" style="width: 12px; height: 12px; color: var(--text-muted);"></i>
-        <div class="step-pill" :class="{ active: currentStep === 2 }">
-          <span class="step-dot"></span>
-          <span>2. Enter PIN</span>
+        <i data-lucide="chevron-right" style="width: 14px; height: 14px; color: var(--text-muted);"></i>
+        <div class="step-node" :class="{ active: currentStep === 2, done: attendanceSuccess }">
+          <span class="node-num">2</span>
+          <span>Verify PIN</span>
         </div>
       </div>
 
-      <!-- MAIN CARD -->
+      <!-- Primary Kiosk Card -->
       <div class="kiosk-card">
-        
-        <!-- ============================================ -->
-        <!-- SECURITY / MISUSE ERROR BANNER               -->
-        <!-- ============================================ -->
-        <div v-if="securityError" class="security-error-card">
-          <i data-lucide="shield-x" style="width: 40px; height: 40px;"></i>
-          <div class="security-error-title">{{ securityError.title || 'Security Alert' }}</div>
-          <p class="security-error-desc">{{ securityError.message }}</p>
-
-          <button class="btn-punch-in" style="background: #0f172a; margin-top: 4px; padding: 10px;" @click="resetToBeginning">
-            <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i>
-            <span>Try Again</span>
-          </button>
-        </div>
 
         <!-- ============================================ -->
-        <!-- STEP 1: SELFIE CAMERA & CHECK IN/OUT TOGGLE  -->
+        <!-- STEP 1: SCAN FACE (WITH AUTO-DETECT DIRECTION) -->
         <!-- ============================================ -->
-        <div v-if="currentStep === 1 && !attendanceSuccess && !securityError" style="display: flex; flex-direction: column; gap: 10px;">
+        <div v-if="currentStep === 1" style="display: flex; flex-direction: column; gap: 10px;">
           
-          <!-- Mode Toggle -->
-          <div class="mode-bar">
-            <button 
-              type="button"
-              class="mode-btn" 
-              :class="{ 'active-in': selectedMode === 'IN' }"
-              @click="setMode('IN')">
-              <span class="mode-indicator-dot"></span>
-              <span>CHECK IN</span>
-            </button>
-            <button 
-              type="button"
-              class="mode-btn" 
-              :class="{ 'active-out': selectedMode === 'OUT' }"
-              @click="setMode('OUT')">
-              <span class="mode-indicator-dot"></span>
-              <span>CHECK OUT</span>
-            </button>
+          <!-- SMART DIRECTION BAR (SOLVES FORGETTING CHECK IN/OUT) -->
+          <div class="smart-mode-wrap">
+            <div class="mode-segments">
+              <button 
+                type="button" 
+                class="seg-btn" 
+                :class="{ 'active-auto': punchMode === 'AUTO' }" 
+                @click="setPunchMode('AUTO')">
+                <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i>
+                <span>⚡ Auto</span>
+              </button>
+
+              <button 
+                type="button" 
+                class="seg-btn" 
+                :class="{ 'active-in': punchMode === 'IN' }" 
+                @click="setPunchMode('IN')">
+                <span>🟢 In</span>
+              </button>
+
+              <button 
+                type="button" 
+                class="seg-btn" 
+                :class="{ 'active-out': punchMode === 'OUT' }" 
+                @click="setPunchMode('OUT')">
+                <span>🟠 Out</span>
+              </button>
+            </div>
+
+            <!-- Smart Auto-Helper Insight -->
+            <div v-if="punchMode === 'AUTO'" class="smart-helper-pill">
+              <i data-lucide="info" style="width: 12px; height: 12px;"></i>
+              <span>Auto-detects IN or OUT based on your last punch</span>
+            </div>
+            <div v-else-if="punchMode === 'IN'" class="smart-helper-pill" style="background:#ecfdf5; border-color:#a7f3d0; color:#059669;">
+              <span>Manual Override: Forcing 🟢 CHECK IN</span>
+            </div>
+            <div v-else class="smart-helper-pill" style="background:#fffbeb; border-color:#fde68a; color:#d97706;">
+              <span>Manual Override: Forcing 🟠 CHECK OUT</span>
+            </div>
           </div>
 
-          <!-- Camera Viewport (Compact Squircle) -->
-          <div class="cam-box">
-            <video id="camera-video" autoplay playsinline muted></video>
+          <!-- Futuristic Cyber Biometric Scanner Viewport -->
+          <div class="scanner-viewport-wrap">
+            <video id="camera-video" autoplay playsinline></video>
             <canvas id="canvas-snap" style="display: none;"></canvas>
 
-            <div class="cam-chip">
-              <span class="pulse-dot"></span>
-              <span>LIVE</span>
+            <!-- 4 Cyber Viewfinder Corner Brackets -->
+            <div class="corner-bracket corner-tl"></div>
+            <div class="corner-bracket corner-tr"></div>
+            <div class="corner-bracket corner-bl"></div>
+            <div class="corner-bracket corner-br"></div>
+
+            <!-- Animated Laser Scanline Beam -->
+            <div class="cyber-laser-beam"></div>
+
+            <!-- Holographic Target Oval -->
+            <div class="holo-oval-target"></div>
+
+            <!-- Status HUD -->
+            <div class="hud-chip">
+              <span class="hud-pulse"></span>
+              <span>AI SCANNER ACTIVE</span>
             </div>
 
-            <button class="flip-camera-btn" @click="toggleCameraFacing" title="Flip Camera">
+            <button class="flip-btn" @click="toggleCameraFacing" title="Flip Camera">
               <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i>
             </button>
-
-            <!-- Face Oval Overlay -->
-            <div class="oval-guide"></div>
           </div>
 
-          <div class="cam-prompt">
-            <div class="cam-prompt-title">
-              Ready to {{ selectedMode === 'IN' ? 'Check In' : 'Check Out' }}
-            </div>
-            <div class="cam-prompt-sub">Center your face inside the frame</div>
+          <!-- Prompt Title -->
+          <div class="prompt-block">
+            <div class="prompt-title">Position Face In Frame</div>
+            <div class="prompt-sub">Look at camera &bull; Tap scan to authenticate</div>
           </div>
 
-          <!-- Instant Capture Button -->
+          <!-- Creative Action Button -->
           <button 
-            type="button"
-            :class="selectedMode === 'IN' ? 'btn-punch-in' : 'btn-punch-out'" 
+            type="button" 
+            class="btn-action-hero"
+            :class="{ 'mode-in': punchMode === 'IN', 'mode-out': punchMode === 'OUT' }" 
             @click="instantScanAndProceed">
-            <i data-lucide="camera" style="width: 18px; height: 18px;"></i>
-            <span>{{ selectedMode === 'IN' ? 'SCAN FACE & CHECK IN' : 'SCAN FACE & CHECK OUT' }}</span>
+            <i data-lucide="camera" style="width: 20px; height: 20px;"></i>
+            <span>{{ getActionButtonLabel() }}</span>
           </button>
         </div>
 
         <!-- ============================================ -->
-        <!-- STEP 2: ENTER 4-DIGIT PIN                   -->
+        <!-- STEP 2: TACTILE FUTURISTIC PIN KEYPAD        -->
         <!-- ============================================ -->
-        <div v-if="currentStep === 2 && !attendanceSuccess && !securityError" style="display: flex; flex-direction: column; gap: 10px;">
-          <!-- Selfie Preview & Mode Badge -->
-          <div class="selfie-status-row">
-            <div class="selfie-mini-group">
-              <img :src="capturedSelfie" class="selfie-mini-thumb" alt="Selfie">
+        <div v-if="currentStep === 2 && !attendanceSuccess && !securityError" style="display: flex; flex-direction: column; gap: 8px;">
+          
+          <!-- Live Snapshot Banner & Retake Button -->
+          <div class="selfie-card-banner">
+            <div class="selfie-badge-group">
+              <img :src="capturedSelfie" class="selfie-avatar-thumb" alt="Captured Face">
               <div>
-                <div style="font-weight: 700; font-size: 0.82rem; color: var(--text-dark);">Face Captured ✓</div>
-                <div class="selfie-status-badge" :class="selectedMode === 'IN' ? 'badge-in' : 'badge-out'">
-                  {{ selectedMode === 'IN' ? '🟢 CHECK IN' : '🟠 CHECK OUT' }}
+                <div style="font-weight: 800; font-size: 0.82rem; color: var(--text-dark); display: flex; align-items: center; gap: 4px;">
+                  <span>Face Captured</span>
+                  <i data-lucide="check-circle-2" style="width: 14px; height: 14px; color: #10b981;"></i>
                 </div>
+                <div style="font-size: 0.68rem; color: var(--text-muted); font-weight: 600;">AI embeddings ready</div>
               </div>
             </div>
-            <button class="retake-btn" @click="retakeSelfie">
-              <i data-lucide="rotate-ccw" style="width: 12px; height: 12px;"></i> Retake
+
+            <button class="retake-pill" @click="retakeSelfie">
+              <i data-lucide="rotate-ccw" style="width: 12px; height: 12px;"></i>
+              <span>Retake</span>
             </button>
           </div>
 
-          <div style="text-align: center;">
-            <div class="cam-prompt-title">Enter Secret PIN</div>
-            <div class="cam-prompt-sub">Type 4 digits to verify identity</div>
+          <!-- Smart Direction Suggestion Card -->
+          <div class="smart-detected-banner">
+            <div class="detected-text">
+              <span v-if="punchMode === 'AUTO'">⚡ Auto: Marking <b>{{ autoLogType }}</b></span>
+              <span v-else>Direction: <b>{{ punchMode }}</b></span>
+            </div>
+
+            <button type="button" class="toggle-dir-btn" @click="toggleExplicitMode">
+              <i data-lucide="repeat" style="width: 11px; height: 11px;"></i>
+              <span>Switch to {{ (punchMode === 'AUTO' ? autoLogType : punchMode) === 'IN' ? 'OUT' : 'IN' }}</span>
+            </button>
           </div>
 
-          <!-- PIN Dots -->
-          <div class="pin-dots">
-            <div class="pin-dot" :class="{ filled: pinDigits.length >= 1 }"></div>
-            <div class="pin-dot" :class="{ filled: pinDigits.length >= 2 }"></div>
-            <div class="pin-dot" :class="{ filled: pinDigits.length >= 3 }"></div>
-            <div class="pin-dot" :class="{ filled: pinDigits.length >= 4 }"></div>
+          <!-- Prompt Title -->
+          <div class="prompt-block">
+            <div class="prompt-title">Enter Secret PIN</div>
+            <div class="prompt-sub">Type your 4 digits to confirm identity</div>
           </div>
 
-          <!-- 3x4 Tactile Keypad -->
-          <div class="keypad-grid">
-            <button class="key-btn" @click="pressKey('1')">
-              <span class="key-num">1</span>
-              <span class="key-sub"></span>
+          <!-- Glowing Neon PIN Beads -->
+          <div class="pin-beads-wrap">
+            <div class="pin-bead" :class="{ filled: pinDigits.length >= 1 }"></div>
+            <div class="pin-bead" :class="{ filled: pinDigits.length >= 2 }"></div>
+            <div class="pin-bead" :class="{ filled: pinDigits.length >= 3 }"></div>
+            <div class="pin-bead" :class="{ filled: pinDigits.length >= 4 }"></div>
+          </div>
+
+          <!-- High-Tech Tactile Keypad -->
+          <div class="tactile-keypad-grid">
+            <button class="tactile-key" @click="pressKey('1')">
+              <span class="key-digit">1</span>
+              <span class="key-letters">&bull;</span>
             </button>
-            <button class="key-btn" @click="pressKey('2')">
-              <span class="key-num">2</span>
-              <span class="key-sub">ABC</span>
+            <button class="tactile-key" @click="pressKey('2')">
+              <span class="key-digit">2</span>
+              <span class="key-letters">ABC</span>
             </button>
-            <button class="key-btn" @click="pressKey('3')">
-              <span class="key-num">3</span>
-              <span class="key-sub">DEF</span>
+            <button class="tactile-key" @click="pressKey('3')">
+              <span class="key-digit">3</span>
+              <span class="key-letters">DEF</span>
             </button>
-            <button class="key-btn" @click="pressKey('4')">
-              <span class="key-num">4</span>
-              <span class="key-sub">GHI</span>
+            <button class="tactile-key" @click="pressKey('4')">
+              <span class="key-digit">4</span>
+              <span class="key-letters">GHI</span>
             </button>
-            <button class="key-btn" @click="pressKey('5')">
-              <span class="key-num">5</span>
-              <span class="key-sub">JKL</span>
+            <button class="tactile-key" @click="pressKey('5')">
+              <span class="key-digit">5</span>
+              <span class="key-letters">JKL</span>
             </button>
-            <button class="key-btn" @click="pressKey('6')">
-              <span class="key-num">6</span>
-              <span class="key-sub">MNO</span>
+            <button class="tactile-key" @click="pressKey('6')">
+              <span class="key-digit">6</span>
+              <span class="key-letters">MNO</span>
             </button>
-            <button class="key-btn" @click="pressKey('7')">
-              <span class="key-num">7</span>
-              <span class="key-sub">PQRS</span>
+            <button class="tactile-key" @click="pressKey('7')">
+              <span class="key-digit">7</span>
+              <span class="key-letters">PQRS</span>
             </button>
-            <button class="key-btn" @click="pressKey('8')">
-              <span class="key-num">8</span>
-              <span class="key-sub">TUV</span>
+            <button class="tactile-key" @click="pressKey('8')">
+              <span class="key-digit">8</span>
+              <span class="key-letters">TUV</span>
             </button>
-            <button class="key-btn" @click="pressKey('9')">
-              <span class="key-num">9</span>
-              <span class="key-sub">WXYZ</span>
+            <button class="tactile-key" @click="pressKey('9')">
+              <span class="key-digit">9</span>
+              <span class="key-letters">WXYZ</span>
             </button>
-            <button class="key-btn key-util" @click="clearPin" title="Clear">
+            <button class="tactile-key key-action" @click="clearPin" title="Clear">
               <i data-lucide="delete" style="width: 18px; height: 18px;"></i>
             </button>
-            <button class="key-btn" @click="pressKey('0')">
-              <span class="key-num">0</span>
-              <span class="key-sub">+</span>
+            <button class="tactile-key" @click="pressKey('0')">
+              <span class="key-digit">0</span>
+              <span class="key-letters">+</span>
             </button>
-            <button class="key-btn key-util" @click="backspacePin" title="Backspace">
+            <button class="tactile-key key-action" @click="backspacePin" title="Backspace">
               <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
             </button>
           </div>
 
           <!-- Loading Indicator -->
-          <div v-if="isSubmitting" style="text-align: center; color: var(--primary); font-size: 0.84rem; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 4px;">
+          <div v-if="isSubmitting" style="text-align: center; color: var(--primary); font-size: 0.84rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 4px;">
             <i data-lucide="loader-2" style="width: 16px; height: 16px; animation: spin 1s linear infinite;"></i>
-            <span>Checking biometrics & identity...</span>
+            <span>Neural Matching Biometrics...</span>
           </div>
         </div>
 
         <!-- ============================================ -->
         <!-- SECURITY ALERT / FACE MISMATCH SCREEN        -->
         <!-- ============================================ -->
-        <div v-if="securityError" class="security-card" style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; padding: 18px; background: #fff1f2; border: 2px solid #fecdd3; border-radius: 18px;">
-          <div style="width: 54px; height: 54px; border-radius: 50%; background: #ffe4e6; display: flex; align-items: center; justify-content: center; color: #e11d48; margin-top: 4px;">
+        <div v-if="securityError" class="security-card" style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding: 16px; background: #fff1f2; border: 2px solid #fecdd3; border-radius: 18px;">
+          <div style="width: 52px; height: 52px; border-radius: 50%; background: #ffe4e6; display: flex; align-items: center; justify-content: center; color: #e11d48;">
             <i data-lucide="shield-alert" style="width: 28px; height: 28px;"></i>
           </div>
           <div>
-            <div style="font-family: 'Outfit', sans-serif; font-size: 1.18rem; font-weight: 700; color: #9f1239;">{{ securityError.title || 'Biometric Alert' }}</div>
-            <div style="font-size: 0.84rem; color: #be123c; margin-top: 5px; line-height: 1.45;">{{ securityError.message }}</div>
+            <div style="font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 800; color: #9f1239;">{{ securityError.title || 'Biometric Alert' }}</div>
+            <div style="font-size: 0.82rem; color: #be123c; margin-top: 4px; line-height: 1.45;">{{ securityError.message }}</div>
           </div>
 
-          <!-- Dual Photo Comparison for Face Mismatch -->
-          <div v-if="securityError.selfiePhoto && securityError.targetPhoto" class="dual-audit-box" style="margin-top: 4px; background: #ffffff; width: 100%;">
-            <div class="audit-col">
-              <span class="audit-tag" style="background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5;">Live Scanned Face</span>
-              <img :src="securityError.selfiePhoto" style="width: 100%; height: 90px; object-fit: cover; border-radius: 8px; border: 2px solid #ef4444;" alt="Live Selfie">
+          <!-- Dual Photo Comparison Evidence -->
+          <div v-if="securityError.selfiePhoto && securityError.targetPhoto" class="dual-biometric-grid" style="margin-top: 2px; background: #ffffff;">
+            <div class="bio-col">
+              <span class="bio-tag" style="background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5;">Your Scanned Face</span>
+              <div class="bio-thumb-wrap" style="border-color:#ef4444;">
+                <img :src="securityError.selfiePhoto" alt="Live Selfie">
+              </div>
             </div>
-            <div class="audit-col">
-              <span class="audit-tag" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1;">PIN Owner Photo</span>
-              <img :src="securityError.targetPhoto" style="width: 100%; height: 90px; object-fit: cover; border-radius: 8px; border: 2px solid #94a3b8;" alt="Enrolled Photo">
+            <div class="bio-col">
+              <span class="bio-tag" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1;">PIN Owner Master</span>
+              <div class="bio-thumb-wrap" style="border-color:#94a3b8;">
+                <img :src="securityError.targetPhoto" alt="Enrolled Photo">
+              </div>
             </div>
           </div>
 
-          <button class="btn-punch-in" style="background: #e11d48; margin-top: 6px; width: 100%;" @click="resetToBeginning">
+          <button class="btn-action-hero" style="background: #e11d48; margin-top: 4px; width: 100%; box-shadow: 0 4px 12px rgba(225, 29, 72, 0.35);" @click="resetToBeginning">
             <i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i>
             <span>Scan Correct Face & Retry</span>
           </button>
         </div>
 
         <!-- ============================================ -->
-        <!-- STEP 3: SUCCESS CONFIRMATION                 -->
+        <!-- STEP 3: DIGITAL EMPLOYEE PASS (SUCCESS)      -->
         <!-- ============================================ -->
-        <div v-if="attendanceSuccess" class="success-card">
-          <div class="success-icon">
-            <i data-lucide="check" style="width: 28px; height: 28px;"></i>
+        <div v-if="attendanceSuccess" class="digital-pass-card">
+          <div class="verified-halo">
+            <i data-lucide="check" style="width: 28px; height: 28px; stroke-width: 3;"></i>
           </div>
 
           <div>
-            <div class="success-name">{{ attendanceSuccess.employee_name }}</div>
-            <div style="font-size: 0.78rem; color: var(--text-muted);">
+            <div class="pass-name">{{ attendanceSuccess.employee_name }}</div>
+            <div class="pass-role">
               {{ attendanceSuccess.employee_id }} &bull; {{ attendanceSuccess.department }}
             </div>
           </div>
 
-          <div class="success-pill" :class="attendanceSuccess.log_type === 'IN' ? 'pill-in' : 'pill-out'">
+          <div class="punch-direction-badge" :class="attendanceSuccess.log_type === 'IN' ? 'badge-punch-in' : 'badge-punch-out'">
+            <i :data-lucide="attendanceSuccess.log_type === 'IN' ? 'log-in' : 'log-out'" style="width: 18px; height: 18px;"></i>
             <span>{{ attendanceSuccess.log_type === 'IN' ? 'CHECKED IN' : 'CHECKED OUT' }}</span>
             &bull;
             <span>{{ attendanceSuccess.time }}</span>
           </div>
 
-          <!-- Dual Audit Photos -->
-          <div class="dual-audit-box">
-            <div class="audit-col">
-              <span class="audit-tag tag-live">📸 Live Selfie</span>
-              <div class="audit-thumb-wrap">
+          <!-- Dual Biometric Audit Photos -->
+          <div class="dual-biometric-grid">
+            <div class="bio-col">
+              <span class="bio-tag tag-sensor">📸 Live Camera Sensor</span>
+              <div class="bio-thumb-wrap verified-border">
                 <img :src="attendanceSuccess.captured_photo || capturedSelfie" alt="Selfie">
               </div>
             </div>
 
-            <div class="audit-col">
-              <span class="audit-tag tag-admin">🛡️ Admin Photo</span>
-              <div class="audit-thumb-wrap">
+            <div class="bio-col">
+              <span class="bio-tag tag-enrolled">🛡️ Enrolled Master</span>
+              <div class="bio-thumb-wrap verified-border">
                 <img :src="attendanceSuccess.reference_photo || attendanceSuccess.captured_photo || capturedSelfie" alt="Official">
               </div>
             </div>
           </div>
 
-          <div style="font-size: 0.74rem; color: var(--success); font-weight: 700; display: flex; align-items: center; gap: 4px;">
-            <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
+          <div class="shift-intel-chip">
+            <i data-lucide="shield-check" style="width: 16px; height: 16px; color: #10b981;"></i>
             <span>{{ attendanceSuccess.match_status }}</span>
+            &bull;
+            <span>{{ attendanceSuccess.timing_module }}</span>
           </div>
 
-          <button class="btn-punch-in" style="background: #0f172a; padding: 10px; margin-top: 4px;" @click="resetToBeginning">
+          <button class="btn-action-hero" style="background: #0f172a; margin-top: 4px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);" @click="resetToBeginning">
             <span>Next Person ({{ countdownTimer }}s)</span>
           </button>
         </div>
@@ -978,9 +1296,9 @@
       </div>
     </main>
 
-    <!-- Toast Notification -->
-    <div v-if="toast" class="toast-pill">
-      <i data-lucide="info" style="width: 14px; height: 14px;"></i>
+    <!-- Floating Toast Notification -->
+    <div v-if="toast" class="toast-capsule">
+      <i data-lucide="info" style="width: 15px; height: 15px; color: #38bdf8;"></i>
       <span>{{ toast }}</span>
     </div>
   </div>
@@ -994,7 +1312,11 @@
         const currentTimeStr = ref('');
         const currentDateStr = ref('');
         const currentStep = ref(1); // 1 = Camera Selfie, 2 = Enter PIN
-        const selectedMode = ref('IN');
+        
+        // Smart Direction System (AUTO, IN, OUT)
+        const punchMode = ref('AUTO'); // Default to smart auto!
+        const autoLogType = ref('IN'); // Context-aware resolution
+        
         const facingMode = ref('user');
         const capturedSelfie = ref(null);
         const pinDigits = ref('');
@@ -1006,6 +1328,10 @@
         const toast = ref('');
         const geoCoords = ref('');
 
+        const selfieDescriptor = ref(null);
+        const modelsLoaded = ref(false);
+        let selfieDetectionPromise = null;
+
         const showToast = (msg) => {
           toast.value = msg;
           setTimeout(() => { if (toast.value === msg) toast.value = ''; }, 3500);
@@ -1015,11 +1341,35 @@
           const now = new Date();
           currentTimeStr.value = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
           currentDateStr.value = now.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+
+          // Time-based smart suggestion if AUTO mode
+          if (punchMode.value === 'AUTO') {
+            const hour = now.getHours();
+            autoLogType.value = (hour >= 14) ? 'OUT' : 'IN';
+          }
         };
 
-        const setMode = (mode) => {
-          selectedMode.value = mode;
+        const setPunchMode = (mode) => {
+          punchMode.value = mode;
           playTone('click');
+        };
+
+        const toggleExplicitMode = () => {
+          const current = (punchMode.value === 'AUTO' ? autoLogType.value : punchMode.value);
+          const next = current === 'IN' ? 'OUT' : 'IN';
+          punchMode.value = next;
+          autoLogType.value = next;
+          playTone('click');
+        };
+
+        const getActionButtonLabel = () => {
+          if (punchMode.value === 'AUTO') {
+            return `SCAN FACE (AUTO PUNCH)`;
+          } else if (punchMode.value === 'IN') {
+            return `SCAN FACE & CHECK IN`;
+          } else {
+            return `SCAN FACE & CHECK OUT`;
+          }
         };
 
         // Haptic Sound Synth
@@ -1033,32 +1383,33 @@
 
             if (type === 'click') {
               osc.type = 'sine';
-              osc.frequency.setValueAtTime(600, ctx.currentTime);
-              gain.gain.setValueAtTime(0.06, ctx.currentTime);
+              osc.frequency.setValueAtTime(650, ctx.currentTime);
+              gain.gain.setValueAtTime(0.08, ctx.currentTime);
               gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
               osc.start();
               osc.stop(ctx.currentTime + 0.04);
             } else if (type === 'shutter') {
               osc.type = 'triangle';
-              osc.frequency.setValueAtTime(800, ctx.currentTime);
+              osc.frequency.setValueAtTime(850, ctx.currentTime);
               osc.frequency.setValueAtTime(450, ctx.currentTime + 0.06);
-              gain.gain.setValueAtTime(0.12, ctx.currentTime);
+              gain.gain.setValueAtTime(0.14, ctx.currentTime);
               gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
               osc.start();
               osc.stop(ctx.currentTime + 0.12);
             } else if (type === 'success') {
               osc.type = 'triangle';
-              osc.frequency.setValueAtTime(523.25, ctx.currentTime);
-              osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.08);
-              gain.gain.setValueAtTime(0.1, ctx.currentTime);
+              osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+              osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.08); // E5
+              osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.16); // G5
+              gain.gain.setValueAtTime(0.18, ctx.currentTime);
               gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
               osc.start();
               osc.stop(ctx.currentTime + 0.35);
             } else if (type === 'error') {
               osc.type = 'sawtooth';
-              osc.frequency.setValueAtTime(200, ctx.currentTime);
-              osc.frequency.setValueAtTime(140, ctx.currentTime + 0.08);
-              gain.gain.setValueAtTime(0.15, ctx.currentTime);
+              osc.frequency.setValueAtTime(220, ctx.currentTime);
+              osc.frequency.setValueAtTime(140, ctx.currentTime + 0.1);
+              gain.gain.setValueAtTime(0.2, ctx.currentTime);
               gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
               osc.start();
               osc.stop(ctx.currentTime + 0.3);
@@ -1068,18 +1419,17 @@
 
         // Geolocation Capture
         const fetchLocation = () => {
-          if (navigator.geolocation) {
+          if ('geolocation' in navigator) {
             navigator.geolocation.getCurrentPosition(
               (pos) => {
                 geoCoords.value = `${pos.coords.latitude.toFixed(6)},${pos.coords.longitude.toFixed(6)}`;
               },
               () => {},
-              { timeout: 6000, maximumAge: 60000 }
+              { enableHighAccuracy: true, timeout: 5000, maximumAge: 60000 }
             );
           }
         };
 
-        // Camera Logic
         let streamTrack = null;
         const initCamera = async () => {
           const video = document.getElementById('camera-video');
@@ -1110,6 +1460,23 @@
           initCamera();
         };
 
+        // Preload Face-API AI weights in background from local assets
+        const initFaceModels = async () => {
+          try {
+            if (typeof faceapi === 'undefined') return;
+            const MODEL_URL = '/assets/face_attendance/models';
+            await Promise.all([
+              faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+              faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL),
+              faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+            ]);
+            modelsLoaded.value = true;
+            console.log('AI Face recognition models loaded successfully!');
+          } catch(err) {
+            console.error('Error loading AI models:', err);
+          }
+        };
+
         // Canvas Snapshot + Liveness/Darkness Check
         const snapFrame = () => {
           const video = document.getElementById('camera-video');
@@ -1130,7 +1497,7 @@
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
           ctx.restore();
 
-          // Liveness & Covered Lens Check (Sample center pixels)
+          // Liveness & Covered Lens Check
           try {
             const imgData = ctx.getImageData(Math.floor(w * 0.25), Math.floor(h * 0.25), Math.floor(w * 0.5), Math.floor(h * 0.5));
             const data = imgData.data;
@@ -1145,33 +1512,11 @@
             }
             const avgBrightness = count > 0 ? (sumBrightness / count) : 100;
             if (avgBrightness < 8) {
-              // Lens is covered / black / pitch dark
               return { error: 'Camera is covered or room is too dark. Please show your face in good light.' };
             }
           } catch(e) {}
 
           return { url: canvas.toDataURL('image/jpeg', 0.82) };
-        };
-
-        const selfieDescriptor = ref(null);
-        const modelsLoaded = ref(false);
-        let selfieDetectionPromise = null;
-
-        // Preload Face-API AI weights in background from local assets
-        const initFaceModels = async () => {
-          try {
-            if (typeof faceapi === 'undefined') return;
-            const MODEL_URL = '/assets/face_attendance/models';
-            await Promise.all([
-              faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-              faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL),
-              faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
-            ]);
-            modelsLoaded.value = true;
-            console.log('AI Face recognition models loaded successfully!');
-          } catch(err) {
-            console.error('Error loading AI models:', err);
-          }
         };
 
         const computeSelfieDescriptor = async () => {
@@ -1314,6 +1659,11 @@
               return;
             }
 
+            // Smart Auto-Direction Resolution based on profile history:
+            if (punchMode.value === 'AUTO') {
+              autoLogType.value = profile.auto_log_type || 'IN';
+            }
+
             // 3. Real-Time Biometric Face Matching (Anti-Buddy Punching)
             let targetDescriptor = null;
             if (profile.face_descriptor) {
@@ -1346,10 +1696,11 @@
             }
 
             // 4. Submit Punch to Server
+            const finalLogType = punchMode.value === 'AUTO' ? autoLogType.value : punchMode.value;
             const payload = {
               pin: pinDigits.value,
               photo_base64: capturedSelfie.value,
-              log_type: selectedMode.value,
+              log_type: finalLogType,
               match_status: 'Verified Match',
               coords: geoCoords.value,
               selfie_descriptor: JSON.stringify(selfieDescriptor.value)
@@ -1458,14 +1809,22 @@
             }
           });
 
-          nextTick(() => lucide.createIcons());
+          nextTick(() => {
+            lucide.createIcons();
+          });
         });
 
         return {
           currentTimeStr,
           currentDateStr,
           currentStep,
-          selectedMode,
+          punchMode,
+          autoLogType,
+          setPunchMode,
+          toggleExplicitMode,
+          getActionButtonLabel,
+          facingMode,
+          toggleCameraFacing,
           capturedSelfie,
           pinDigits,
           isSubmitting,
@@ -1473,8 +1832,6 @@
           attendanceSuccess,
           countdownTimer,
           toast,
-          setMode,
-          toggleCameraFacing,
           instantScanAndProceed,
           retakeSelfie,
           pressKey,
