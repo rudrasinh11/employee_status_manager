@@ -289,13 +289,8 @@ def mark_face_pin_attendance(
     today = nowdate()
     today_start = f"{today} 00:00:00"
 
-    # Enforce reference photo requirement
-    if not profile.face_image and not is_first_time_call:
-        return {
-            "success": False,
-            "require_first_time_setup": True,
-            "message": _("First-time setup required: Please register your Official Reference Photo.")
-        }
+    # Match status: check against admin reference photo if present
+    match_status = "Verified Match" if profile.face_image else "Selfie Captured (Pending Admin Photo)"
 
     # 1. 100% Automatic Log Type Determination
     if profile.last_checkin_time and str(profile.last_checkin_time) >= today_start:
@@ -329,7 +324,7 @@ def mark_face_pin_attendance(
         except Exception as file_err:
             frappe.log_error(f"Error saving attendance selfie: {file_err}", "Face Attendance Photo Save")
 
-    match_status = "Verified Match" if profile.face_image else "First-Time Reference Registered"
+    match_status = "Verified Match" if profile.face_image else "Selfie Verified"
 
     # 4. Create Standard Employee Checkin
     employee_checkin_name = None
