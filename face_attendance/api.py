@@ -258,6 +258,8 @@ def mark_face_pin_attendance(
     pin: str,
     photo_base64: str | None = None,
     log_type: str | None = None,
+    match_status: str | None = None,
+    ai_confidence: str | None = None,
     is_first_time_call: bool = False,
     coords: str | None = None,
     device_info: str | None = None
@@ -289,8 +291,9 @@ def mark_face_pin_attendance(
     today = nowdate()
     today_start = f"{today} 00:00:00"
 
-    # Match status: check against admin reference photo if present
-    match_status = "Verified Match" if profile.face_image else "Selfie Captured (Pending Admin Photo)"
+    # Match status
+    if not match_status:
+        match_status = "Verified Match" if profile.face_image else "Selfie Captured (Pending Admin Photo)"
 
     # 1. Manual Log Type Selection (IN or OUT chosen by employee)
     if log_type and log_type.upper() in ["IN", "OUT"]:
@@ -326,8 +329,6 @@ def mark_face_pin_attendance(
         except Exception as file_err:
             frappe.log_error(f"Error saving attendance selfie: {file_err}", "Face Attendance Photo Save")
 
-    match_status = "Verified Match" if profile.face_image else "Selfie Verified"
-
     # 4. Create Standard Employee Checkin
     employee_checkin_name = None
     try:
@@ -344,6 +345,10 @@ def mark_face_pin_attendance(
         employee_checkin_name = checkin_doc.name
     except Exception as checkin_err:
         frappe.log_error(f"Error creating Employee Checkin: {checkin_err}", "Face Attendance Checkin")
+
+    notes_msg = f"Shift: {timing_info['module']} ({timing_info['label']}). Match Status: {match_status}."
+    if ai_confidence:
+        notes_msg += f" AI Match Confidence: {ai_confidence}."
 
     # 5. Create Face Attendance Log record
     face_log = frappe.get_doc({
@@ -362,7 +367,7 @@ def mark_face_pin_attendance(
         "ip_address": getattr(frappe.local, "request_ip", "127.0.0.1"),
         "location_coords": coords or "",
         "employee_checkin": employee_checkin_name,
-        "notes": f"Automated Shift: {timing_info['module']} ({timing_info['label']}). Anti-fake reference verified."
+        "notes": notes_msg
     })
     face_log.insert(ignore_permissions=True)
 
@@ -419,6 +424,7 @@ def mark_face_pin_attendance(
         "reference_photo": profile.face_image or photo_file_url,
         "captured_photo": photo_file_url,
         "match_status": match_status,
+        "ai_confidence": ai_confidence or "",
         "is_first_time_enrolled": bool(is_first_time_call),
         "message": f"Welcome, {profile.employee_name}! Marked {log_type} ({timing_info['label']})."
     }
