@@ -257,15 +257,15 @@ def register_first_time_face_and_attendance(
 def mark_face_pin_attendance(
     pin: str,
     photo_base64: str | None = None,
+    log_type: str | None = None,
     is_first_time_call: bool = False,
     coords: str | None = None,
     device_info: str | None = None
 ) -> dict:
     """
-    100% Automated Attendance Engine:
-    - Automatically determines IN vs OUT from shift state.
-    - Automatically classifies session into Regular Day, Half Day, Overtime.
-    - Enforces anti-fake audit against official reference photo.
+    Attendance Engine:
+    - Supports manual Check In / Check Out selected by employee.
+    - Saves live selfie & audits against reference photo.
     """
     if not pin:
         frappe.throw(_("4-Digit Secret PIN is required"))
@@ -292,8 +292,10 @@ def mark_face_pin_attendance(
     # Match status: check against admin reference photo if present
     match_status = "Verified Match" if profile.face_image else "Selfie Captured (Pending Admin Photo)"
 
-    # 1. 100% Automatic Log Type Determination
-    if profile.last_checkin_time and str(profile.last_checkin_time) >= today_start:
+    # 1. Manual Log Type Selection (IN or OUT chosen by employee)
+    if log_type and log_type.upper() in ["IN", "OUT"]:
+        log_type = log_type.upper()
+    elif profile.last_checkin_time and str(profile.last_checkin_time) >= today_start:
         log_type = "OUT" if profile.last_log_type == "IN" else "IN"
     else:
         log_type = "IN"

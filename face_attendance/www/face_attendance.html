@@ -30,6 +30,7 @@
       --success-border: #a7f3d0;
       --amber: #d97706;
       --amber-light: #fffbeb;
+      --amber-border: #fde68a;
       --danger-red: #dc2626;
       --shadow-elevation: 0 20px 40px -15px rgba(15, 23, 42, 0.08), 0 4px 6px -2px rgba(15, 23, 42, 0.03);
       --radius-panel: 24px;
@@ -55,12 +56,12 @@
       overflow-x: hidden;
     }
 
-    /* Minimal Clean Header (No Clutter, No Shift Window) */
+    /* Minimal Clean Header */
     header {
       width: 100%;
       max-width: 520px;
       margin: 0 auto;
-      padding: 16px 20px 10px;
+      padding: 16px 20px 8px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -122,7 +123,7 @@
       width: 100%;
       max-width: 520px;
       margin: 0 auto;
-      padding: 10px 16px 24px;
+      padding: 8px 16px 24px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -134,7 +135,7 @@
       align-items: center;
       justify-content: center;
       gap: 12px;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
 
     .step-pill {
@@ -168,16 +169,67 @@
       background: currentColor;
     }
 
+    /* Manual Check In / Check Out Segmented Bar */
+    .mode-selector-bar {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      background: #f1f5f9;
+      padding: 4px;
+      border-radius: var(--radius-btn);
+      margin-bottom: 2px;
+    }
+
+    .mode-option-btn {
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 0.92rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .mode-option-btn:hover {
+      color: var(--text-dark);
+    }
+
+    .mode-option-btn.selected-in {
+      background: var(--surface-white);
+      color: var(--success-green);
+      box-shadow: 0 2px 8px rgba(5, 150, 105, 0.18);
+    }
+
+    .mode-option-btn.selected-out {
+      background: var(--surface-white);
+      color: var(--amber);
+      box-shadow: 0 2px 8px rgba(217, 119, 6, 0.18);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
     /* Kiosk Primary Card */
     .kiosk-card {
       background: var(--surface-white);
       border: 1px solid var(--border-color);
       border-radius: var(--radius-panel);
       box-shadow: var(--shadow-elevation);
-      padding: 22px;
+      padding: 20px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
       animation: cardAppear 0.25s ease;
     }
 
@@ -264,8 +316,8 @@
     /* Face Oval Reticle */
     .face-reticle {
       position: absolute;
-      width: 190px;
-      height: 240px;
+      width: 185px;
+      height: 235px;
       border: 2px dashed rgba(255, 255, 255, 0.6);
       border-radius: 50% 50% 48% 48%;
       pointer-events: none;
@@ -293,7 +345,7 @@
 
     .camera-instruction {
       text-align: center;
-      padding: 4px 0 2px;
+      padding: 2px 0;
     }
 
     .instruction-title {
@@ -309,11 +361,11 @@
       margin-top: 2px;
     }
 
-    /* Primary Action Buttons */
-    .btn-action-primary {
+    /* Primary Action Buttons (Dynamic IN vs OUT) */
+    .btn-action-in {
       width: 100%;
       padding: 15px;
-      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      background: linear-gradient(135deg, #059669, #047857);
       color: #ffffff;
       border: none;
       border-radius: var(--radius-btn);
@@ -325,22 +377,37 @@
       align-items: center;
       justify-content: center;
       gap: 10px;
-      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25);
+      box-shadow: 0 6px 16px rgba(5, 150, 105, 0.28);
       transition: all 0.15s ease;
     }
 
-    .btn-action-primary:hover:not(:disabled) {
-      background: linear-gradient(135deg, #1d4ed8, #1e40af);
+    .btn-action-in:hover:not(:disabled) {
+      background: linear-gradient(135deg, #047857, #065f46);
       transform: translateY(-1px);
     }
 
-    .btn-action-primary:active:not(:disabled) {
-      transform: translateY(1px);
+    .btn-action-out {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, #d97706, #b45309);
+      color: #ffffff;
+      border: none;
+      border-radius: var(--radius-btn);
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 6px 16px rgba(217, 119, 6, 0.28);
+      transition: all 0.15s ease;
     }
 
-    .btn-action-primary:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
+    .btn-action-out:hover:not(:disabled) {
+      background: linear-gradient(135deg, #b45309, #92400e);
+      transform: translateY(-1px);
     }
 
     /* STEP 2: PIN Pad Section */
@@ -369,6 +436,29 @@
       box-shadow: 0 2px 6px rgba(16, 185, 129, 0.2);
     }
 
+    .mode-badge-pill {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 2px;
+    }
+
+    .badge-in {
+      background: var(--success-green-light);
+      color: var(--success-green);
+      border: 1px solid var(--success-border);
+    }
+
+    .badge-out {
+      background: var(--amber-light);
+      color: var(--amber);
+      border: 1px solid var(--amber-border);
+    }
+
     .retake-btn {
       background: #ffffff;
       border: 1px solid var(--border-color);
@@ -393,7 +483,7 @@
       display: flex;
       justify-content: center;
       gap: 14px;
-      margin: 8px 0;
+      margin: 6px 0;
     }
 
     .pin-dot {
@@ -507,9 +597,19 @@
       border-radius: var(--radius-full);
       font-size: 0.88rem;
       font-weight: 700;
+      border: 1px solid transparent;
+    }
+
+    .pill-in {
       background: var(--success-green-light);
       color: var(--success-green);
-      border: 1px solid var(--success-border);
+      border-color: var(--success-border);
+    }
+
+    .pill-out {
+      background: var(--amber-light);
+      color: var(--amber);
+      border-color: var(--amber-border);
     }
 
     /* Side-by-Side Dual Audit */
@@ -590,7 +690,7 @@
 <body>
 {% raw %}
   <div id="app">
-    <!-- Clean Header (No Upper Shift Window) -->
+    <!-- Clean Minimal Header -->
     <header>
       <div class="brand-wrap">
         <div class="brand-icon">
@@ -627,9 +727,30 @@
       <div class="kiosk-card">
         
         <!-- ============================================ -->
-        <!-- STEP 1: SELFIE CAMERA FIRST                  -->
+        <!-- STEP 1: SELFIE CAMERA & MANUAL IN/OUT CHOICE -->
         <!-- ============================================ -->
         <div v-if="currentStep === 1 && !attendanceSuccess" style="display: flex; flex-direction: column; gap: 14px;">
+          
+          <!-- Manual CHECK IN vs CHECK OUT Segmented Toggle -->
+          <div class="mode-selector-bar">
+            <button 
+              type="button"
+              class="mode-option-btn" 
+              :class="{ 'selected-in': selectedMode === 'IN' }"
+              @click="setMode('IN')">
+              <span class="status-dot"></span>
+              <span>CHECK IN</span>
+            </button>
+            <button 
+              type="button"
+              class="mode-option-btn" 
+              :class="{ 'selected-out': selectedMode === 'OUT' }"
+              @click="setMode('OUT')">
+              <span class="status-dot"></span>
+              <span>CHECK OUT</span>
+            </button>
+          </div>
+
           <!-- Camera Viewport -->
           <div class="camera-wrapper">
             <video id="camera-video" autoplay playsinline muted></video>
@@ -649,28 +770,35 @@
           </div>
 
           <div class="camera-instruction">
-            <div class="instruction-title">Position Your Face</div>
-            <div class="instruction-sub">Look straight at the camera and snap selfie</div>
+            <div class="instruction-title">
+              Ready to {{ selectedMode === 'IN' ? 'Check In' : 'Check Out' }}
+            </div>
+            <div class="instruction-sub">Align face inside the frame and tap below</div>
           </div>
 
-          <!-- Capture Selfie Button -->
-          <button class="btn-action-primary" @click="captureSelfieAndProceed">
+          <!-- Action Button: Explicitly matches selected mode -->
+          <button 
+            type="button"
+            :class="selectedMode === 'IN' ? 'btn-action-in' : 'btn-action-out'" 
+            @click="captureSelfieAndProceed">
             <i data-lucide="camera" style="width: 20px; height: 20px;"></i>
-            <span>SCAN MY FACE</span>
+            <span>{{ selectedMode === 'IN' ? 'SCAN FACE & CHECK IN' : 'SCAN FACE & CHECK OUT' }}</span>
           </button>
         </div>
 
         <!-- ============================================ -->
         <!-- STEP 2: ENTER 4-DIGIT PIN                   -->
         <!-- ============================================ -->
-        <div v-if="currentStep === 2 && !attendanceSuccess" style="display: flex; flex-direction: column; gap: 16px;">
-          <!-- Selfie Preview Bar -->
+        <div v-if="currentStep === 2 && !attendanceSuccess" style="display: flex; flex-direction: column; gap: 14px;">
+          <!-- Selfie Preview & Mode Badge -->
           <div class="selfie-preview-bar">
             <div class="selfie-thumb-group">
               <img :src="capturedSelfie" class="selfie-thumb" alt="Selfie">
               <div>
                 <div style="font-weight: 700; font-size: 0.88rem; color: var(--text-dark);">Selfie Captured</div>
-                <div style="font-size: 0.72rem; color: var(--success-green); font-weight: 600;">✓ Ready for PIN</div>
+                <div class="mode-badge-pill" :class="selectedMode === 'IN' ? 'badge-in' : 'badge-out'">
+                  {{ selectedMode === 'IN' ? '🟢 CHECK IN' : '🟠 CHECK OUT' }}
+                </div>
               </div>
             </div>
             <button class="retake-btn" @click="retakeSelfie">
@@ -680,7 +808,7 @@
 
           <div style="text-align: center;">
             <div class="instruction-title">Enter Secret PIN</div>
-            <div class="instruction-sub">Type your 4-digit code to confirm attendance</div>
+            <div class="instruction-sub">Type your 4-digit code to complete punch</div>
           </div>
 
           <!-- 4-Digit Indicator Circles -->
@@ -744,12 +872,12 @@
           <!-- Loading Indicator when verifying -->
           <div v-if="isSubmitting" style="text-align: center; color: var(--primary-blue); font-size: 0.88rem; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;">
             <i data-lucide="loader-2" style="width: 18px; height: 18px; animation: spin 1s linear infinite;"></i>
-            <span>Verifying Face & PIN...</span>
+            <span>Confirming {{ selectedMode }}...</span>
           </div>
         </div>
 
         <!-- ============================================ -->
-        <!-- STEP 3: DONE / CONFIRMATION                  -->
+        <!-- STEP 3: CONFIRMATION                         -->
         <!-- ============================================ -->
         <div v-if="attendanceSuccess" class="success-card">
           <div class="success-icon-wrap">
@@ -763,7 +891,7 @@
             </div>
           </div>
 
-          <div class="success-status-pill">
+          <div class="success-status-pill" :class="attendanceSuccess.log_type === 'IN' ? 'pill-in' : 'pill-out'">
             <span>{{ attendanceSuccess.log_type === 'IN' ? 'CHECKED IN' : 'CHECKED OUT' }}</span>
             &bull;
             <span>{{ attendanceSuccess.time }}</span>
@@ -791,7 +919,7 @@
             <span>{{ attendanceSuccess.match_status }} &bull; Attendance Recorded</span>
           </div>
 
-          <button class="btn-action-primary" style="margin-top: 6px;" @click="resetToBeginning">
+          <button class="btn-action-in" style="margin-top: 6px; background: #0f172a;" @click="resetToBeginning">
             <span>Next Person ({{ countdownTimer }}s)</span>
           </button>
         </div>
@@ -815,6 +943,7 @@
         const currentTimeStr = ref('');
         const currentDateStr = ref('');
         const currentStep = ref(1); // 1 = Camera Selfie, 2 = Enter PIN
+        const selectedMode = ref('IN'); // Default manual mode: 'IN' or 'OUT'
         const facingMode = ref('user');
         const capturedSelfie = ref(null);
         const pinDigits = ref('');
@@ -833,6 +962,11 @@
           const now = new Date();
           currentTimeStr.value = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
           currentDateStr.value = now.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+        };
+
+        const setMode = (mode) => {
+          selectedMode.value = mode;
+          playTone('click');
         };
 
         // Haptic Sound Synth
@@ -936,7 +1070,7 @@
           currentStep.value = 2; // Move to PIN
           pinDigits.value = '';
 
-          // Stop active camera stream while entering PIN to save battery/bandwidth
+          // Stop active camera stream while entering PIN
           if (streamTrack) streamTrack.stop();
 
           nextTick(() => lucide.createIcons());
@@ -974,14 +1108,15 @@
           playTone('click');
         };
 
-        // STEP 2 -> STEP 3 (Submit Attendance)
+        // STEP 2 -> STEP 3 (Submit Attendance with manual log_type)
         const submitAttendance = async () => {
           isSubmitting.value = true;
 
           try {
             const payload = {
               pin: pinDigits.value,
-              photo_base64: capturedSelfie.value
+              photo_base64: capturedSelfie.value,
+              log_type: selectedMode.value // Manual choice 'IN' or 'OUT'
             };
 
             const res = await fetch('/api/method/face_attendance.api.mark_face_pin_attendance', {
@@ -1066,12 +1201,14 @@
           currentTimeStr,
           currentDateStr,
           currentStep,
+          selectedMode,
           capturedSelfie,
           pinDigits,
           isSubmitting,
           attendanceSuccess,
           countdownTimer,
           toast,
+          setMode,
           toggleCameraFacing,
           captureSelfieAndProceed,
           retakeSelfie,
