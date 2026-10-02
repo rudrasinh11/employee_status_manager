@@ -87,7 +87,7 @@ def verify_pin_preview(pin: str) -> dict:
     profile = frappe.db.get_value(
         "Face Attendance Profile",
         {"secret_pin": pin_str, "status": "Active"},
-        ["name", "employee", "employee_name", "department", "designation", "face_image", "is_registered", "last_log_type", "last_checkin_time"],
+        ["name", "employee", "employee_name", "department", "designation", "face_image", "face_descriptor", "is_registered", "last_log_type", "last_checkin_time"],
         as_dict=True
     )
     
@@ -120,6 +120,7 @@ def verify_pin_preview(pin: str) -> dict:
         "department": profile.department or "Team Member",
         "designation": profile.designation or "",
         "face_image": profile.face_image or "",
+        "face_descriptor": profile.face_descriptor or "",
         "has_reference_image": bool(profile.face_image),
         "last_log_type": profile.last_log_type or "None",
         "last_checkin_time": format_time(profile.last_checkin_time, "hh:mm a") if profile.last_checkin_time else "None",
@@ -136,7 +137,8 @@ def mark_face_pin_attendance(
     match_status: str | None = None,
     ai_confidence: str | None = None,
     coords: str | None = None,
-    device_info: str | None = None
+    device_info: str | None = None,
+    selfie_descriptor: str | None = None
 ) -> dict:
     """
     Security-Hardened Attendance Marking Endpoint:
@@ -164,7 +166,7 @@ def mark_face_pin_attendance(
     profile = frappe.db.get_value(
         "Face Attendance Profile",
         {"secret_pin": pin_str, "status": "Active"},
-        ["name", "employee", "employee_name", "department", "designation", "face_image", "is_registered", "total_checkins", "last_log_type", "last_checkin_time"],
+        ["name", "employee", "employee_name", "department", "designation", "face_image", "face_descriptor", "is_registered", "total_checkins", "last_log_type", "last_checkin_time"],
         as_dict=True
     )
     
@@ -192,7 +194,33 @@ def mark_face_pin_attendance(
     else:
         resolved_log_type = "IN"
 
-    # --- DEFENSE 1: Rapid Duplicate Click Cooldown ---
+    # --- DEFENSE 1: Blank / Covered Camera Check ---
+    if not photo_base64 or len(photo_base64) < 400:
+        return {
+            "success": False,
+            "message": _("Camera was covered or selfie frame missing. Face must be clearly visible.")
+        }
+
+    # --- DEFENSE 2: Real-time Biometric Face Matching (Anti-Buddy Punching) ---
+    if profile.face_descriptor and selfie_descriptor:
+        try:
+            import json
+            ref_vec = json.loads(profile.face_descriptor) if isinstance(profile.face_descriptor, str) else profile.face_descriptor
+            input_vec = json.loads(selfie_descriptor) if isinstance(selfie_descriptor, str) else selfie_descriptor
+            
+            if ref_vec and input_vec and len(ref_vec) == len(input_vec):
+                dist = math.sqrt(sum((a - b) ** 2 for a, b in zip(input_vec, ref_vec)))
+                if dist > 0.50:
+                    frappe.log_error(f"Proxy punch rejected for {profile.employee_name}. Face distance: {dist:.3f}", "Biometric Mismatch")
+                    return {
+                        "success": False,
+                        "face_mismatch": True,
+                        "message": _(f"Face Mismatch! Scanned face does not match {profile.employee_name}'s official photo. Proxy punch rejected.")
+                    }
+        except Exception as face_err:
+            frappe.log_error(f"Face matching check error: {face_err}", "Biometric Face Match")
+
+    # --- DEFENSE 3: Rapid Duplicate Click Cooldown ---
     if profile.last_checkin_time:
         delta_seconds = (now_dt - profile.last_checkin_time).total_seconds()
         if profile.last_log_type == resolved_log_type and delta_seconds < 15:
@@ -202,13 +230,6 @@ def mark_face_pin_attendance(
                 "cooldown": True,
                 "message": _(f"Duplicate punch blocked: You already marked {resolved_log_type} {int(delta_seconds)}s ago. Please wait {remaining_wait}s.")
             }
-
-    # --- DEFENSE 2: Blank / Covered Camera Check ---
-    if not photo_base64 or len(photo_base64) < 400:
-        return {
-            "success": False,
-            "message": _("Camera was covered or selfie frame missing. Face must be clearly visible.")
-        }
 
     # --- DEFENSE 3: Geofencing Check (if office coordinates are configured) ---
     geo_status = "Verified In Office"
@@ -358,3 +379,25 @@ def mark_face_pin_attendance(
         "ai_confidence": ai_confidence or "",
         "message": f"Welcome, {profile.employee_name}! Marked {log_type}."
     }
+
+@frappe.whitelist(allow_guest=True)
+def save_employee_face_descriptor(employee: str | None = None, employee_name: str | None = None, descriptor: str | None = None) -> dict:
+    """Save 128-float face descriptor for employee."""
+    if not descriptor:
+        return {"success": False, "message": "Descriptor required"}
+    
+    filters = {}
+    if employee:
+        filters["employee"] = employee
+    elif employee_name:
+        filters["employee_name"] = employee_name
+    else:
+        return {"success": False, "message": "Employee identifier required"}
+        
+    profile_name = frappe.db.get_value("Face Attendance Profile", filters, "name")
+    if not profile_name:
+        return {"success": False, "message": "Profile not found"}
+        
+    frappe.db.set_value("Face Attendance Profile", profile_name, "face_descriptor", descriptor)
+    frappe.db.commit()
+    return {"success": True, "message": f"Face descriptor enrolled successfully for {profile_name}"}

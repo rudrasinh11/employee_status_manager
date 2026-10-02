@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Face Enrollment Runner</title>
+  <script src="/assets/face_attendance/js/face-api.min.js"></script>
+</head>
+<body style="font-family: sans-serif; padding: 20px;">
+  <h2>Precomputing & Enrolling Employee Face Descriptors...</h2>
+  <div id="log">Loading models...</div>
+  <div id="status" style="margin-top: 20px; font-weight: bold;">INITIALIZING</div>
+
+  <img id="rudra_img" src="/files/Profile image.png" style="display:none;" crossOrigin="anonymous">
+  <img id="parth_img" src="/files/WhatsApp Image 2026-10-02 at 10.57.44 AM.jpeg" style="display:none;" crossOrigin="anonymous">
+
+  <script>
+    async function run() {
+      const log = document.getElementById('log');
+      const status = document.getElementById('status');
+      
+      try {
+        log.innerText = 'Loading AI models from /assets/face_attendance/models...';
+        await faceapi.nets.tinyFaceDetector.loadFromUri('/assets/face_attendance/models');
+        await faceapi.nets.faceLandmark68TinyNet.loadFromUri('/assets/face_attendance/models');
+        await faceapi.nets.faceRecognitionNet.loadFromUri('/assets/face_attendance/models');
+        log.innerText = 'Models loaded! Enrolling rudra...';
+
+        const rudraImg = document.getElementById('rudra_img');
+        if (!rudraImg.complete) {
+          await new Promise(r => rudraImg.onload = r);
+        }
+
+        const rudraDetection = await faceapi.detectSingleFace(rudraImg, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.3 }))
+          .withFaceLandmarks(true)
+          .withFaceDescriptor();
+
+        if (rudraDetection) {
+          const rudraDesc = JSON.stringify(Array.from(rudraDetection.descriptor));
+          await fetch('/api/method/face_attendance.api.save_employee_face_descriptor', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ employee_name: 'rudra', descriptor: rudraDesc })
+          });
+          log.innerHTML += '<br><b>rudra: Enrolled successfully (' + rudraDetection.descriptor.length + ' features)</b>';
+        } else {
+          log.innerHTML += '<br><b style="color:red;">rudra: No face detected in image!</b>';
+        }
+
+        log.innerHTML += '<br>Enrolling Parth...';
+        const parthImg = document.getElementById('parth_img');
+        if (!parthImg.complete) {
+          await new Promise(r => parthImg.onload = r);
+        }
+
+        const parthDetection = await faceapi.detectSingleFace(parthImg, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.3 }))
+          .withFaceLandmarks(true)
+          .withFaceDescriptor();
+
+        if (parthDetection) {
+          const parthDesc = JSON.stringify(Array.from(parthDetection.descriptor));
+          await fetch('/api/method/face_attendance.api.save_employee_face_descriptor', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ employee_name: 'Parth', descriptor: parthDesc })
+          });
+          log.innerHTML += '<br><b>Parth: Enrolled successfully (' + parthDetection.descriptor.length + ' features)</b>';
+        } else {
+          log.innerHTML += '<br><b style="color:red;">Parth: No face detected in image!</b>';
+        }
+
+        status.innerText = 'ENROLLMENT_COMPLETED';
+        status.style.color = 'green';
+      } catch (e) {
+        log.innerHTML += '<br><b style="color:red;">Error: ' + e.message + '</b>';
+        status.innerText = 'ENROLLMENT_FAILED';
+        status.style.color = 'red';
+      }
+    }
+
+    window.onload = run;
+  </script>
+</body>
+</html>

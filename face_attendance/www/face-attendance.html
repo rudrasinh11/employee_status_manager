@@ -16,6 +16,9 @@
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
+  <!-- Face API AI Model Library (Served Locally) -->
+  <script src="/assets/face_attendance/js/face-api.min.js"></script>
+
   <style>
     :root {
       --bg-page: #f8fafc;
@@ -890,8 +893,38 @@
           <!-- Loading Indicator -->
           <div v-if="isSubmitting" style="text-align: center; color: var(--primary); font-size: 0.84rem; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 4px;">
             <i data-lucide="loader-2" style="width: 16px; height: 16px; animation: spin 1s linear infinite;"></i>
-            <span>Verifying identity...</span>
+            <span>Checking biometrics & identity...</span>
           </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- SECURITY ALERT / FACE MISMATCH SCREEN        -->
+        <!-- ============================================ -->
+        <div v-if="securityError" class="security-card" style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; padding: 18px; background: #fff1f2; border: 2px solid #fecdd3; border-radius: 18px;">
+          <div style="width: 54px; height: 54px; border-radius: 50%; background: #ffe4e6; display: flex; align-items: center; justify-content: center; color: #e11d48; margin-top: 4px;">
+            <i data-lucide="shield-alert" style="width: 28px; height: 28px;"></i>
+          </div>
+          <div>
+            <div style="font-family: 'Outfit', sans-serif; font-size: 1.18rem; font-weight: 700; color: #9f1239;">{{ securityError.title || 'Biometric Alert' }}</div>
+            <div style="font-size: 0.84rem; color: #be123c; margin-top: 5px; line-height: 1.45;">{{ securityError.message }}</div>
+          </div>
+
+          <!-- Dual Photo Comparison for Face Mismatch -->
+          <div v-if="securityError.selfiePhoto && securityError.targetPhoto" class="dual-audit-box" style="margin-top: 4px; background: #ffffff; width: 100%;">
+            <div class="audit-col">
+              <span class="audit-tag" style="background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5;">Live Scanned Face</span>
+              <img :src="securityError.selfiePhoto" style="width: 100%; height: 90px; object-fit: cover; border-radius: 8px; border: 2px solid #ef4444;" alt="Live Selfie">
+            </div>
+            <div class="audit-col">
+              <span class="audit-tag" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1;">PIN Owner Photo</span>
+              <img :src="securityError.targetPhoto" style="width: 100%; height: 90px; object-fit: cover; border-radius: 8px; border: 2px solid #94a3b8;" alt="Enrolled Photo">
+            </div>
+          </div>
+
+          <button class="btn-punch-in" style="background: #e11d48; margin-top: 6px; width: 100%;" @click="resetToBeginning">
+            <i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i>
+            <span>Scan Correct Face & Retry</span>
+          </button>
         </div>
 
         <!-- ============================================ -->
@@ -1120,6 +1153,59 @@
           return { url: canvas.toDataURL('image/jpeg', 0.82) };
         };
 
+        const selfieDescriptor = ref(null);
+        const modelsLoaded = ref(false);
+        let selfieDetectionPromise = null;
+
+        // Preload Face-API AI weights in background from local assets
+        const initFaceModels = async () => {
+          try {
+            if (typeof faceapi === 'undefined') return;
+            const MODEL_URL = '/assets/face_attendance/models';
+            await Promise.all([
+              faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+              faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL),
+              faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+            ]);
+            modelsLoaded.value = true;
+            console.log('AI Face recognition models loaded successfully!');
+          } catch(err) {
+            console.error('Error loading AI models:', err);
+          }
+        };
+
+        const computeSelfieDescriptor = async () => {
+          if (!capturedSelfie.value || typeof faceapi === 'undefined') return null;
+          try {
+            const img = new Image();
+            img.src = capturedSelfie.value;
+            await new Promise(r => img.onload = r);
+
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, 256, 256);
+
+            const det = await faceapi.detectSingleFace(
+              canvas,
+              new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.30 })
+            ).withFaceLandmarks(true).withFaceDescriptor();
+
+            if (det) {
+              selfieDescriptor.value = Array.from(det.descriptor);
+              console.log('Selfie descriptor ready!');
+              return selfieDescriptor.value;
+            } else {
+              selfieDescriptor.value = null;
+              console.warn('No clear face recognized in captured selfie');
+            }
+          } catch(e) {
+            console.error('Descriptor calculation error:', e);
+          }
+          return null;
+        };
+
         // STEP 1 -> STEP 2: INSTANT (< 50ms) Face Scan
         const instantScanAndProceed = () => {
           const result = snapFrame();
@@ -1141,12 +1227,18 @@
           currentStep.value = 2; // INSTANT transition to PIN screen!
           pinDigits.value = '';
           securityError.value = null;
+          selfieDescriptor.value = null;
+
+          // Start background AI feature extraction immediately
+          selfieDetectionPromise = computeSelfieDescriptor();
 
           nextTick(() => lucide.createIcons());
         };
 
         const retakeSelfie = () => {
           capturedSelfie.value = null;
+          selfieDescriptor.value = null;
+          selfieDetectionPromise = null;
           pinDigits.value = '';
           securityError.value = null;
           currentStep.value = 1;
@@ -1184,8 +1276,25 @@
           securityError.value = null;
 
           try {
-            // 1. Verify PIN and check if employee exists
-            const previewRes = await fetch(`/api/method/face_attendance.api.verify_pin_preview?pin=${pinDigits.value}`);
+            // 1. Wait for selfie face descriptor to complete
+            if (selfieDetectionPromise) {
+              await selfieDetectionPromise;
+            }
+
+            if (!selfieDescriptor.value) {
+              playTone('error');
+              securityError.value = {
+                title: 'No Face Detected',
+                message: 'No clear human face was recognized in the selfie. Please step into brighter lighting and face the camera directly.'
+              };
+              pinDigits.value = '';
+              isSubmitting.value = false;
+              nextTick(() => lucide.createIcons());
+              return;
+            }
+
+            // 2. Verify PIN and check if employee exists
+            const previewRes = await fetch(`/api/method/face_attendance.api.verify_pin_preview?pin=${encodeURIComponent(pinDigits.value)}`);
             const previewData = await previewRes.json();
             const profile = previewData.message;
 
@@ -1205,17 +1314,45 @@
               return;
             }
 
-            // 2. Anti-Buddy Punching Check
-            // Valid DocType options: "Verified Match", "Review Needed", "Missing Reference"
-            const matchStatus = profile.face_image ? 'Verified Match' : 'Missing Reference';
+            // 3. Real-Time Biometric Face Matching (Anti-Buddy Punching)
+            let targetDescriptor = null;
+            if (profile.face_descriptor) {
+              try {
+                targetDescriptor = JSON.parse(profile.face_descriptor);
+              } catch(e) {}
+            }
 
-            // 3. Submit Punch to Server
+            if (targetDescriptor && selfieDescriptor.value) {
+              const distance = faceapi.euclideanDistance(selfieDescriptor.value, targetDescriptor);
+              console.log(`Face match distance for ${profile.employee_name}: ${distance.toFixed(4)}`);
+
+              if (distance > 0.48) {
+                // BIOMETRIC PROXY ATTEMPT DETECTED!
+                playTone('error');
+                if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 100]);
+
+                securityError.value = {
+                  title: 'Biometric Mismatch Detected!',
+                  message: `Scanned face does NOT match the enrolled reference photo for ${profile.employee_name} (${profile.employee})! Proxy buddy punching is prohibited.`,
+                  selfiePhoto: capturedSelfie.value,
+                  targetPhoto: profile.face_image
+                };
+
+                pinDigits.value = '';
+                isSubmitting.value = false;
+                nextTick(() => lucide.createIcons());
+                return;
+              }
+            }
+
+            // 4. Submit Punch to Server
             const payload = {
               pin: pinDigits.value,
               photo_base64: capturedSelfie.value,
               log_type: selectedMode.value,
-              match_status: matchStatus,
-              coords: geoCoords.value
+              match_status: 'Verified Match',
+              coords: geoCoords.value,
+              selfie_descriptor: JSON.stringify(selfieDescriptor.value)
             };
 
             const attRes = await fetch('/api/method/face_attendance.api.mark_face_pin_attendance', {
@@ -1248,10 +1385,12 @@
                 errorMsg = attData.exception.split(':').pop().trim();
               }
 
-              if (result && result.cooldown) {
+              if (result && (result.face_mismatch || result.cooldown)) {
                 securityError.value = {
-                  title: 'Duplicate Punch Blocked',
-                  message: errorMsg
+                  title: result.face_mismatch ? 'Biometric Mismatch' : 'Duplicate Punch Blocked',
+                  message: errorMsg,
+                  selfiePhoto: capturedSelfie.value,
+                  targetPhoto: profile.face_image
                 };
               } else {
                 showToast(errorMsg);
@@ -1285,6 +1424,8 @@
           if (resetInterval) clearInterval(resetInterval);
           attendanceSuccess.value = null;
           capturedSelfie.value = null;
+          selfieDescriptor.value = null;
+          selfieDetectionPromise = null;
           pinDigits.value = '';
           securityError.value = null;
           currentStep.value = 1;
@@ -1299,6 +1440,7 @@
           updateClock();
           setInterval(updateClock, 1000);
           initCamera();
+          initFaceModels();
           fetchLocation();
 
           // Physical keyboard support
