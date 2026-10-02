@@ -184,15 +184,23 @@ def mark_face_pin_attendance(
     today = nowdate()
     today_start = f"{today} 00:00:00"
 
-    # --- DEFENSE 1: Rapid Spam / Duplicate Punch Cooldown (120 seconds) ---
+    # 1. Manual Log Type Selection (IN or OUT)
+    if log_type and log_type.upper() in ["IN", "OUT"]:
+        resolved_log_type = log_type.upper()
+    elif profile.last_checkin_time and str(profile.last_checkin_time) >= today_start:
+        resolved_log_type = "OUT" if profile.last_log_type == "IN" else "IN"
+    else:
+        resolved_log_type = "IN"
+
+    # --- DEFENSE 1: Rapid Duplicate Click Cooldown ---
     if profile.last_checkin_time:
         delta_seconds = (now_dt - profile.last_checkin_time).total_seconds()
-        if delta_seconds < 120:
-            remaining_wait = int(120 - delta_seconds)
+        if profile.last_log_type == resolved_log_type and delta_seconds < 15:
+            remaining_wait = int(15 - delta_seconds)
             return {
                 "success": False,
                 "cooldown": True,
-                "message": _(f"Duplicate punch blocked: You already punched {int(delta_seconds)}s ago. Please wait {remaining_wait}s.")
+                "message": _(f"Duplicate punch blocked: You already marked {resolved_log_type} {int(delta_seconds)}s ago. Please wait {remaining_wait}s.")
             }
 
     # --- DEFENSE 2: Blank / Covered Camera Check ---
@@ -223,20 +231,13 @@ def mark_face_pin_attendance(
         except Exception:
             pass
 
-    # 1. Manual Log Type Selection (IN or OUT)
-    if log_type and log_type.upper() in ["IN", "OUT"]:
-        log_type = log_type.upper()
-    elif profile.last_checkin_time and str(profile.last_checkin_time) >= today_start:
-        log_type = "OUT" if profile.last_log_type == "IN" else "IN"
-    else:
-        log_type = "IN"
-
-    # Match status audit
-    if not match_status:
-        match_status = "Verified Match" if profile.face_image else "Selfie Logged (No Admin Photo)"
+    # Match status audit - Strictly enforce allowed DocType values: "Verified Match", "Review Needed", "Missing Reference"
+    allowed_statuses = ["Verified Match", "Review Needed", "Missing Reference"]
+    if match_status not in allowed_statuses:
+        match_status = "Verified Match" if profile.face_image else "Missing Reference"
 
     # 2. Timing Classification
-    timing_info = get_timing_classification(now_dt, log_type)
+    timing_info = get_timing_classification(now_dt, resolved_log_type)
 
     # 3. Save Captured Selfie Photo
     photo_file_url = None
@@ -267,7 +268,7 @@ def mark_face_pin_attendance(
             "doctype": "Employee Checkin",
             "employee": profile.employee,
             "time": now_dt,
-            "log_type": log_type,
+            "log_type": resolved_log_type,
             "device_id": "Auto-Face-PIN-Kiosk",
             "latitude": coords.split(",")[0].strip() if coords and "," in coords else None,
             "longitude": coords.split(",")[1].strip() if coords and "," in coords else None,
@@ -286,20 +287,21 @@ def mark_face_pin_attendance(
         "doctype": "Face Attendance Log",
         "employee": profile.employee,
         "employee_name": profile.employee_name,
-        "log_type": log_type,
+        "log_type": resolved_log_type,
         "timestamp": now_dt,
         "status": "Success",
         "match_status": match_status,
         "pin_verified": 1,
         "face_detected": 1 if photo_file_url else 0,
         "photo_captured": photo_file_url,
-        "reference_photo": profile.face_image or photo_file_url,
+        "reference_photo": profile.face_image or None,
         "device_info": device_info or "Smart Biometric Kiosk",
         "ip_address": client_ip,
         "location_coords": coords or "",
         "employee_checkin": employee_checkin_name,
         "notes": notes_msg
     })
+    face_log.flags.ignore_links = True
     face_log.insert(ignore_permissions=True)
 
     # 6. Mark Attendance in HRMS / Attendance DocType
