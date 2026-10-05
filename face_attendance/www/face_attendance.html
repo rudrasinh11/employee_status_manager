@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Attendance Kiosk</title>
+  <link rel="icon" href="data:,">
   
   <!-- Clean Modern Typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -894,7 +895,7 @@
           canvas.width = w;
           canvas.height = h;
 
-          const ctx = canvas.getContext('2d');
+          const ctx = canvas.getContext('2d', { willReadFrequently: true });
           ctx.save();
           if (facingMode.value === 'user') {
             ctx.translate(canvas.width, 0);
@@ -935,7 +936,7 @@
             const canvas = document.createElement('canvas');
             canvas.width = 256;
             canvas.height = 256;
-            const ctx = canvas.getContext('2d');
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
             ctx.drawImage(img, 0, 0, 256, 256);
 
             const det = await faceapi.detectSingleFace(
@@ -997,7 +998,7 @@
 
         // Keypad Interactions
         const pressKey = (num) => {
-          if (pinDigits.value.length >= 4 || isSubmitting.value) return;
+          if (isSubmitting.value || pinDigits.value.length >= 4) return;
           pinDigits.value += num;
           if (navigator.vibrate) navigator.vibrate(15);
 
@@ -1016,6 +1017,10 @@
 
         // STEP 2 -> STEP 3: Verification & Auto Attendance Fill-Up
         const submitAndVerify = async () => {
+          if (isSubmitting.value) return;
+          const enteredPin = String(pinDigits.value).trim();
+          if (enteredPin.length !== 4) return;
+
           isSubmitting.value = true;
           securityError.value = null;
 
@@ -1037,7 +1042,7 @@
             }
 
             // 2. Verify PIN and retrieve employee profile
-            const previewRes = await fetch(`/api/method/face_attendance.api.verify_pin_preview?pin=${encodeURIComponent(pinDigits.value)}`);
+            const previewRes = await fetch(`/api/method/face_attendance.api.verify_pin_preview?pin=${encodeURIComponent(enteredPin)}`);
             const previewData = await previewRes.json();
             const profile = previewData.message;
 
@@ -1089,7 +1094,7 @@
             // 4. Auto Attendance Fill-Up: System automatically assigns IN or OUT
             const autoLog = profile.auto_log_type || 'IN';
             const payload = {
-              pin: pinDigits.value,
+              pin: enteredPin,
               photo_base64: capturedSelfie.value,
               log_type: autoLog,
               match_status: 'Verified Match',

@@ -224,15 +224,24 @@ def mark_face_pin_attendance(
     6. Server-side authoritative timestamp (cannot be tampered by mobile clock)
     """
     if not pin:
-        frappe.throw(_("4-Digit Secret PIN is required"))
+        pin = frappe.form_dict.get("pin")
+    if not pin and hasattr(frappe, "request") and frappe.request.is_json:
+        req_json = frappe.request.get_json() or {}
+        pin = req_json.get("pin")
+    
+    if not pin:
+        return {
+            "success": False,
+            "message": _("4-Digit Secret PIN is required")
+        }
     
     client_ip = getattr(frappe.local, "request_ip", "127.0.0.1")
     cache_key = f"pin_attempts_{client_ip}"
     failed_attempts = frappe.cache.get_value(cache_key) or 0
     if failed_attempts >= 5:
-        frappe.response["http_status_code"] = 429
         return {
             "success": False,
+            "locked": True,
             "message": _("Terminal locked: Too many failed PIN attempts. Please wait 3 minutes.")
         }
 
@@ -247,13 +256,12 @@ def mark_face_pin_attendance(
     if not profile:
         new_attempts = failed_attempts + 1
         frappe.cache.set_value(cache_key, new_attempts, expires_in_sec=180)
-        frappe.response["http_status_code"] = 400
         return {
             "success": False,
             "message": _(f"Invalid PIN. {5 - new_attempts} attempts remaining.")
         }
 
-    # Reset failed attempts
+    # Reset failed attempts on valid profile
     frappe.cache.delete_value(cache_key)
 
     now_dt = now_datetime()
@@ -332,7 +340,7 @@ def mark_face_pin_attendance(
         match_status = "Verified Match" if profile.face_image else "Missing Reference"
 
     # 2. Timing Classification
-    timing_info = get_timing_classification(now_dt, resolved_log_type)
+    timing_info = get_timing_classification(now_dt, resolved_log_type, profile=profile)
 
     # 3. Save Captured Selfie Photo
     photo_file_url = None
