@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Job Application | Join Our Team</title>
+  
+  <!-- Modern Clean Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Vue 3 -->
+  <script src="https://unpkg.com/vue@3.4.21/dist/vue.global.prod.js"></script>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* ========================================================= */
+    /* CLEAN WARM MONOCHROME / STONE LUXURY PALETTE              */
+    /* STRICTLY NO BLUE, NO GREEN, NO DARK MODE                  */
+    /* ========================================================= */
+    :root {
+      --bg-page: #f7f7f5;
+      --bg-card: #ffffff;
+      --bg-subtle: #f4f4f2;
+      --bg-hover: #ecece9;
+      
+      --border-base: #e5e5e0;
+      --border-light: #eeeeeb;
+      --border-focus: #18181b;
+      
+      --text-primary: #18181b;
+      --text-secondary: #52525b;
+      --text-muted: #71717a;
+      
+      --primary-btn: #18181b;
+      --primary-btn-hover: #27272a;
+      --primary-btn-text: #ffffff;
+
+      --alert-bg: #fdf2f2;
+      --alert-border: #f8d7da;
+      --alert-text: #991b1b;
+      
+      --radius-card: 20px;
+      --radius-input: 12px;
+      --radius-full: 9999px;
+      --shadow-soft: 0 10px 30px -10px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.02);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg-page);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 40px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    /* Clean Header */
+    .app-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .brand-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-base);
+      border-radius: var(--radius-full);
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
+      letter-spacing: 0.02em;
+    }
+
+    .header-title {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+
+    .header-sub {
+      font-size: 0.84rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    /* Main Application Card */
+    .form-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-base);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-soft);
+      padding: 24px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .section-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border-light);
+      margin-top: 4px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 480px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .required-star {
+      color: #dc2626;
+      font-weight: 700;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="number"],
+    select {
+      width: 100%;
+      height: 44px;
+      padding: 0 14px;
+      border-radius: var(--radius-input);
+      border: 1px solid var(--border-base);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 500;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 1px var(--border-focus);
+    }
+
+    /* PDF Resume Upload Dropzone */
+    .resume-dropzone {
+      position: relative;
+      border: 1.5px dashed var(--border-base);
+      border-radius: var(--radius-input);
+      background: var(--bg-subtle);
+      padding: 18px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .resume-dropzone:hover {
+      background: var(--bg-hover);
+      border-color: var(--text-primary);
+    }
+
+    .resume-dropzone.has-file {
+      background: #ffffff;
+      border-color: var(--text-primary);
+      border-style: solid;
+    }
+
+    .file-input-hidden {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+      z-index: 5;
+    }
+
+    .resume-icon {
+      width: 32px;
+      height: 32px;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .resume-text-title {
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .resume-badge-pdf {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      background: #ffffff;
+      border: 1px solid var(--border-base);
+      border-radius: var(--radius-full);
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .file-selected-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-base);
+      border-radius: 8px;
+      padding: 8px 12px;
+      margin-top: 4px;
+    }
+
+    .file-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow: hidden;
+    }
+
+    .file-name {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 280px;
+    }
+
+    .file-size {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .remove-file-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+
+    .remove-file-btn:hover {
+      color: var(--text-primary);
+    }
+
+    /* Error Alert */
+    .error-card {
+      background: var(--alert-bg);
+      border: 1px solid var(--alert-border);
+      border-radius: var(--radius-input);
+      padding: 10px 14px;
+      color: var(--alert-text);
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Submit Button */
+    .btn-submit {
+      width: 100%;
+      height: 48px;
+      border-radius: var(--radius-input);
+      border: 1px solid var(--primary-btn);
+      background: var(--primary-btn);
+      color: var(--primary-btn-text);
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 6px;
+      transition: background 0.15s ease, transform 0.1s ease;
+    }
+
+    .btn-submit:hover {
+      background: var(--primary-btn-hover);
+    }
+
+    .btn-submit:active {
+      transform: scale(0.98);
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* Success Card View */
+    .success-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-base);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-soft);
+      padding: 36px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 14px;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .success-icon-ring {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: var(--bg-subtle);
+      border: 2px solid var(--border-base);
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ref-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.95rem;
+      font-weight: 700;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-base);
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      color: var(--text-primary);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+{% raw %}
+  <div id="app" class="container">
+    
+    <!-- Header -->
+    <div class="app-header">
+      <div class="brand-pill">
+        <i data-lucide="briefcase" style="width: 14px; height: 14px;"></i>
+        <span>Careers & Recruitment</span>
+      </div>
+      <h1 class="header-title">Candidate Application</h1>
+      <p class="header-sub">Submit your profile and resume for HR review</p>
+    </div>
+
+    <!-- Application Form View -->
+    <div v-if="!submittedSuccess" class="form-card">
+      
+      <!-- Section 1: Personal Details -->
+      <div class="section-title">
+        <i data-lucide="user" style="width: 16px; height: 16px;"></i>
+        <span>Personal & Contact Information</span>
+      </div>
+
+      <div class="form-group">
+        <label for="candidate_name">Full Name <span class="required-star">*</span></label>
+        <input 
+          id="candidate_name" 
+          v-model="form.candidate_name" 
+          type="text" 
+          placeholder="e.g. Aarav Patel" 
+          autocomplete="name">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="phone">Mobile Number <span class="required-star">*</span></label>
+          <input 
+            id="phone" 
+            v-model="form.phone" 
+            type="tel" 
+            placeholder="e.g. 9876543210" 
+            autocomplete="tel">
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Address <span class="required-star">*</span></label>
+          <input 
+            id="email" 
+            v-model="form.email" 
+            type="email" 
+            placeholder="e.g. aarav@example.com" 
+            autocomplete="email">
+        </div>
+      </div>
+
+      <!-- Section 2: Position & Experience -->
+      <div class="section-title">
+        <i data-lucide="award" style="width: 16px; height: 16px;"></i>
+        <span>Role & Experience</span>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="position_applied">Position Applied For <span class="required-star">*</span></label>
+          <input 
+            id="position_applied" 
+            v-model="form.position_applied" 
+            type="text" 
+            placeholder="e.g. Senior Software Engineer">
+        </div>
+
+        <div class="form-group">
+          <label for="current_location">Current City / Location</label>
+          <input 
+            id="current_location" 
+            v-model="form.current_location" 
+            type="text" 
+            placeholder="e.g. Surat, Gujarat">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="experience_years">Total Experience (Years)</label>
+          <input 
+            id="experience_years" 
+            v-model="form.experience_years" 
+            type="number" 
+            step="0.5" 
+            min="0" 
+            placeholder="e.g. 3.5">
+        </div>
+
+        <div class="form-group">
+          <label for="notice_period">Notice Period</label>
+          <select id="notice_period" v-model="form.notice_period">
+            <option value="Immediate">Immediate Joiner</option>
+            <option value="15 Days">15 Days</option>
+            <option value="30 Days">30 Days</option>
+            <option value="60 Days">60 Days</option>
+            <option value="90 Days">90 Days</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="current_ctc">Current Annual CTC (INR)</label>
+          <input 
+            id="current_ctc" 
+            v-model="form.current_ctc" 
+            type="number" 
+            step="10000" 
+            placeholder="e.g. 600000">
+        </div>
+
+        <div class="form-group">
+          <label for="expected_ctc">Expected Annual CTC (INR)</label>
+          <input 
+            id="expected_ctc" 
+            v-model="form.expected_ctc" 
+            type="number" 
+            step="10000" 
+            placeholder="e.g. 850000">
+        </div>
+      </div>
+
+      <!-- Section 3: Resume Upload (STRICTLY PDF ONLY) -->
+      <div class="section-title">
+        <i data-lucide="file-text" style="width: 16px; height: 16px;"></i>
+        <span>Upload Resume (PDF Only) <span class="required-star">*</span></span>
+      </div>
+
+      <div class="resume-dropzone" :class="{ 'has-file': resumeFile }">
+        <input 
+          type="file" 
+          class="file-input-hidden" 
+          accept=".pdf,application/pdf" 
+          @change="onFileSelected">
+        
+        <div class="resume-icon">
+          <i data-lucide="upload-cloud" style="width: 28px; height: 28px;"></i>
+        </div>
+        <div class="resume-text-title">{{ resumeFile ? 'Click to change PDF resume' : 'Upload your resume' }}</div>
+        <div>
+          <span class="resume-badge-pdf">
+            <i data-lucide="file" style="width: 12px; height: 12px;"></i>
+            <span>STRICTLY PDF ONLY (.pdf)</span>
+          </span>
+        </div>
+        <div style="font-size: 0.7rem; color: var(--text-muted);">Word documents (.doc/.docx) or images are not accepted</div>
+      </div>
+
+      <!-- Selected File Strip -->
+      <div v-if="resumeFile" class="file-selected-card">
+        <div class="file-meta">
+          <i data-lucide="file-check-2" style="width: 18px; height: 18px; color: var(--text-primary);"></i>
+          <div>
+            <div class="file-name">{{ resumeFile.name }}</div>
+            <div class="file-size">{{ (resumeFile.size / 1024).toFixed(1) }} KB</div>
+          </div>
+        </div>
+        <button type="button" class="remove-file-btn" @click="removeFile" title="Remove file">
+          <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+        </button>
+      </div>
+
+      <!-- Error Banner -->
+      <div v-if="errorMessage" class="error-card">
+        <i data-lucide="alert-circle" style="width: 18px; height: 18px; flex-shrink: 0;"></i>
+        <span>{{ errorMessage }}</span>
+      </div>
+
+      <!-- Submit Button -->
+      <button 
+        type="button" 
+        class="btn-submit" 
+        :disabled="isSubmitting" 
+        @click="submitApplication">
+        <i v-if="!isSubmitting" data-lucide="send" style="width: 16px; height: 16px;"></i>
+        <i v-else data-lucide="loader-2" style="width: 16px; height: 16px; animation: spin 1s linear infinite;"></i>
+        <span>{{ isSubmitting ? 'Submitting Application...' : 'Submit Application' }}</span>
+      </button>
+
+    </div>
+
+    <!-- Success Confirmation View -->
+    <div v-else class="success-card">
+      <div class="success-icon-ring">
+        <i data-lucide="check" style="width: 32px; height: 32px; stroke-width: 2.5;"></i>
+      </div>
+
+      <h2 style="font-size: 1.4rem; font-weight: 800; color: var(--text-primary);">Application Received!</h2>
+      <p style="font-size: 0.85rem; color: var(--text-muted); max-width: 380px;">
+        Thank you, <b>{{ submittedSuccess.candidate_name }}</b>. Your application for <b>{{ submittedSuccess.position_applied }}</b> has been submitted to HR.
+      </p>
+
+      <div style="margin: 8px 0;">
+        <div style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 4px;">Candidate Reference ID</div>
+        <div class="ref-badge">{{ submittedSuccess.candidate_id }}</div>
+      </div>
+
+      <div style="font-size: 0.78rem; color: var(--text-secondary); background: var(--bg-subtle); padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border-base); width: 100%;">
+        Our recruitment team will review your resume and follow up with you on WhatsApp / Phone shortly.
+      </div>
+
+      <button type="button" class="btn-submit" style="margin-top: 10px;" @click="resetForm">
+        <span>Submit Another Application</span>
+      </button>
+    </div>
+
+  </div>
+{% endraw %}
+
+  <script>
+    const { createApp, ref, onMounted, nextTick } = Vue;
+
+    createApp({
+      setup() {
+        const form = ref({
+          candidate_name: '',
+          phone: '',
+          email: '',
+          position_applied: '',
+          experience_years: '',
+          notice_period: 'Immediate',
+          current_location: '',
+          current_ctc: '',
+          expected_ctc: ''
+        });
+
+        const resumeFile = ref(null);
+        const isSubmitting = ref(false);
+        const errorMessage = ref('');
+        const submittedSuccess = ref(null);
+
+        const onFileSelected = (e) => {
+          errorMessage.value = '';
+          const file = e.target.files[0];
+          if (!file) return;
+
+          const fileName = file.name.toLowerCase();
+
+          // STRICT PDF VALIDATION (Explicitly block .doc, .docx, images)
+          if (fileName.endsWith('.doc') || fileName.endsWith('.docx')) {
+            errorMessage.value = 'Word documents (.doc, .docx) are NOT allowed. Please upload your resume in PDF format (.pdf).';
+            resumeFile.value = null;
+            e.target.value = '';
+            nextTick(() => lucide.createIcons());
+            return;
+          }
+
+          if (!fileName.endsWith('.pdf')) {
+            errorMessage.value = 'Invalid file format. Strictly PDF format (.pdf) is accepted.';
+            resumeFile.value = null;
+            e.target.value = '';
+            nextTick(() => lucide.createIcons());
+            return;
+          }
+
+          if (file.size > 15 * 1024 * 1024) {
+            errorMessage.value = 'File is too large. Maximum allowed size is 15MB.';
+            resumeFile.value = null;
+            e.target.value = '';
+            nextTick(() => lucide.createIcons());
+            return;
+          }
+
+          resumeFile.value = file;
+          nextTick(() => lucide.createIcons());
+        };
+
+        const removeFile = () => {
+          resumeFile.value = null;
+          errorMessage.value = '';
+          nextTick(() => lucide.createIcons());
+        };
+
+        const submitApplication = async () => {
+          errorMessage.value = '';
+
+          // Validate required fields
+          if (!form.value.candidate_name.trim()) {
+            errorMessage.value = 'Please enter your Full Name.';
+            return;
+          }
+          if (!form.value.phone.trim() || form.value.phone.replace(/[^0-9]/g, '').length < 10) {
+            errorMessage.value = 'Please enter a valid mobile number with at least 10 digits.';
+            return;
+          }
+          if (!form.value.email.trim() || !form.value.email.includes('@')) {
+            errorMessage.value = 'Please enter a valid email address.';
+            return;
+          }
+          if (!form.value.position_applied.trim()) {
+            errorMessage.value = 'Please specify the position you are applying for.';
+            return;
+          }
+          if (!resumeFile.value) {
+            errorMessage.value = 'Please attach your resume in PDF format.';
+            return;
+          }
+
+          isSubmitting.value = true;
+
+          try {
+            // Read file as base64
+            const reader = new FileReader();
+            const fileDataPromise = new Promise((resolve, reject) => {
+              reader.onload = () => resolve(reader.result);
+              reader.onerror = reject;
+            });
+            reader.readAsDataURL(resumeFile.value);
+            const base64Data = await fileDataPromise;
+
+            const payload = {
+              candidate_name: form.value.candidate_name.trim(),
+              phone: form.value.phone.trim(),
+              email: form.value.email.trim().toLowerCase(),
+              position_applied: form.value.position_applied.trim(),
+              experience_years: form.value.experience_years ? parseFloat(form.value.experience_years) : 0,
+              notice_period: form.value.notice_period,
+              current_location: form.value.current_location.trim(),
+              current_ctc: form.value.current_ctc ? parseFloat(form.value.current_ctc) : 0,
+              expected_ctc: form.value.expected_ctc ? parseFloat(form.value.expected_ctc) : 0,
+              resume_base64: base64Data,
+              resume_filename: resumeFile.value.name
+            };
+
+            const res = await fetch('/api/method/face_attendance.api.submit_job_application', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+
+            const data = await res.json();
+            const result = data.message || data;
+
+            if (result && result.success) {
+              submittedSuccess.value = result;
+              nextTick(() => lucide.createIcons());
+            } else {
+              let msg = 'Failed to submit application.';
+              if (result && result.message) msg = result.message;
+              else if (data._server_messages) {
+                try {
+                  const parsed = JSON.parse(data._server_messages);
+                  msg = JSON.parse(parsed[0]).message || msg;
+                } catch(e) {}
+              }
+              errorMessage.value = msg;
+            }
+          } catch(err) {
+            console.error('Submission error:', err);
+            errorMessage.value = 'An error occurred while submitting your application. Please check your network connection.';
+          } finally {
+            isSubmitting.value = false;
+          }
+        };
+
+        const resetForm = () => {
+          form.value = {
+            candidate_name: '',
+            phone: '',
+            email: '',
+            position_applied: '',
+            experience_years: '',
+            notice_period: 'Immediate',
+            current_location: '',
+            current_ctc: '',
+            expected_ctc: ''
+          };
+          resumeFile.value = null;
+          errorMessage.value = '';
+          submittedSuccess.value = null;
+          nextTick(() => lucide.createIcons());
+        };
+
+        onMounted(() => {
+          nextTick(() => lucide.createIcons());
+        });
+
+        return {
+          form,
+          resumeFile,
+          isSubmitting,
+          errorMessage,
+          submittedSuccess,
+          onFileSelected,
+          removeFile,
+          submitApplication,
+          resetForm
+        };
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>

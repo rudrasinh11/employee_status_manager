@@ -1,0 +1,217 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "autoname": "format:CAND-.YYYY.-.#####",
+ "creation": "2026-10-05 12:00:00.000000",
+ "description": "Recruitment Job Candidate with Resume (PDF Only) and HR Fast Follow-Up",
+ "doctype": "DocType",
+ "document_type": "Document",
+ "engine": "InnoDB",
+ "field_order": [
+  "sec_cand_info",
+  "candidate_name",
+  "email",
+  "phone",
+  "col_break_1",
+  "status",
+  "position_applied",
+  "current_location",
+  "sec_exp",
+  "experience_years",
+  "notice_period",
+  "col_break_2",
+  "current_ctc",
+  "expected_ctc",
+  "sec_resume",
+  "resume",
+  "sec_follow_up",
+  "source",
+  "next_follow_up_date",
+  "col_break_3",
+  "hr_notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "sec_cand_info",
+   "fieldtype": "Section Break",
+   "label": "Candidate Information"
+  },
+  {
+   "fieldname": "candidate_name",
+   "fieldtype": "Data",
+   "in_global_search": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Candidate Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "email",
+   "fieldtype": "Data",
+   "options": "Email",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Email Address",
+   "reqd": 1
+  },
+  {
+   "fieldname": "phone",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Phone / Mobile",
+   "reqd": 1
+  },
+  {
+   "fieldname": "col_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "New",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Recruitment Status",
+   "options": "New\nScreening\nInterview\nOffered\nHired\nRejected",
+   "reqd": 1
+  },
+  {
+   "fieldname": "position_applied",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Position Applied For",
+   "reqd": 1
+  },
+  {
+   "fieldname": "current_location",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Current City / Location"
+  },
+  {
+   "fieldname": "sec_exp",
+   "fieldtype": "Section Break",
+   "label": "Experience & Compensation"
+  },
+  {
+   "fieldname": "experience_years",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Experience (Years)",
+   "precision": "1"
+  },
+  {
+   "default": "Immediate",
+   "fieldname": "notice_period",
+   "fieldtype": "Select",
+   "label": "Notice Period",
+   "options": "Immediate\n15 Days\n30 Days\n60 Days\n90 Days"
+  },
+  {
+   "fieldname": "col_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "current_ctc",
+   "fieldtype": "Currency",
+   "label": "Current CTC (Annual)"
+  },
+  {
+   "fieldname": "expected_ctc",
+   "fieldtype": "Currency",
+   "label": "Expected CTC (Annual)"
+  },
+  {
+   "fieldname": "sec_resume",
+   "fieldtype": "Section Break",
+   "label": "Resume (Strictly PDF Only)"
+  },
+  {
+   "fieldname": "resume",
+   "fieldtype": "Attach",
+   "in_list_view": 1,
+   "label": "Resume (PDF Only)",
+   "reqd": 1,
+   "description": "Strictly PDF format required (.pdf). Word documents (.doc, .docx) are rejected."
+  },
+  {
+   "fieldname": "sec_follow_up",
+   "fieldtype": "Section Break",
+   "label": "HR Fast Follow-Up"
+  },
+  {
+   "default": "Web Form",
+   "fieldname": "source",
+   "fieldtype": "Select",
+   "label": "Source",
+   "options": "Web Form\nLinkedIn\nReferral\nJob Portal\nWalk-in"
+  },
+  {
+   "fieldname": "next_follow_up_date",
+   "fieldtype": "Date",
+   "in_standard_filter": 1,
+   "label": "Next Follow-Up Date"
+  },
+  {
+   "fieldname": "col_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "hr_notes",
+   "fieldtype": "Small Text",
+   "label": "HR Screening Remarks & Follow-Up Notes"
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-05 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Face Attendance",
+ "name": "Job Candidate",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR User",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "search_fields": "candidate_name,email,phone,position_applied,status",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "title_field": "candidate_name",
+ "track_changes": 1
+}

@@ -99,6 +99,13 @@
    "parenttype": "Workspace",
    "doctype": "Workspace Shortcut",
    "__unsaved": 1
+  },
+  {
+   "type": "DocType",
+   "link_to": "Job Candidate",
+   "label": "Job Candidates (Recruitment)",
+   "color": "Grey",
+   "doc_view": "List"
   }
  ],
  "links": [
@@ -233,6 +240,13 @@
    "parenttype": "Workspace",
    "doctype": "Workspace Link",
    "__unsaved": 1
+  },
+  {
+   "type": "Link",
+   "label": "Job Candidates (PDF Resumes & Follow-Up)",
+   "hidden": 0,
+   "link_type": "DocType",
+   "link_to": "Job Candidate"
   }
  ],
  "quick_lists": [],

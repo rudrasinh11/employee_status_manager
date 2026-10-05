@@ -24,7 +24,13 @@
   "total_checkins",
   "col_break_3",
   "last_checkin_time",
-  "last_log_type"
+  "last_log_type",
+  "sec_shift",
+  "shift_name",
+  "shift_start_time",
+  "col_break_shift",
+  "shift_end_time",
+  "grace_period_mins"
  ],
  "fields": [
   {
@@ -138,6 +144,42 @@
    "label": "Last Log Type",
    "options": "IN\nOUT",
    "read_only": 1
+  },
+  {
+   "fieldname": "sec_shift",
+   "fieldtype": "Section Break",
+   "label": "Shift & Work Timing"
+  },
+  {
+   "default": "Regular Day Shift",
+   "fieldname": "shift_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Assigned Shift"
+  },
+  {
+   "default": "09:30:00",
+   "fieldname": "shift_start_time",
+   "fieldtype": "Time",
+   "in_list_view": 1,
+   "label": "Shift Start Time"
+  },
+  {
+   "fieldname": "col_break_shift",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "18:30:00",
+   "fieldname": "shift_end_time",
+   "fieldtype": "Time",
+   "in_list_view": 1,
+   "label": "Shift End Time"
+  },
+  {
+   "default": "15",
+   "fieldname": "grace_period_mins",
+   "fieldtype": "Int",
+   "label": "Grace Period (Minutes)"
   }
  ],
  "links": [],
