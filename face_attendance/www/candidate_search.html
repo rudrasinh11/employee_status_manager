@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Candidate Talent Search & Sourcing</title>
+  <link rel="icon" href="data:,">
+  
+  <!-- Modern Clean Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Vue 3 -->
+  <script src="https://unpkg.com/vue@3.4.21/dist/vue.global.prod.js"></script>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* ========================================================= */
+    /* CLEAN WARM MONOCHROME / STONE PALETTE                     */
+    /* STRICTLY NO BLUE, NO GREEN, NO DARK MODE                  */
+    /* ========================================================= */
+    :root {
+      --bg-page: #f7f7f5;
+      --bg-card: #ffffff;
+      --bg-subtle: #f4f4f2;
+      --bg-hover: #ecece9;
+      
+      --border-base: #e5e5e0;
+      --border-light: #eeeeeb;
+      --border-focus: #18181b;
+      
+      --text-primary: #18181b;
+      --text-secondary: #52525b;
+      --text-muted: #71717a;
+      
+      --btn-solid: #18181b;
+      --btn-solid-hover: #27272a;
+      --btn-text: #ffffff;
+
+      --radius-card: 16px;
+      --radius-input: 10px;
+      --radius-full: 9999px;
+      --shadow-soft: 0 4px 20px -4px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg-page);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Nav */
+    .top-navbar {
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border-base);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      padding: 12px 20px;
+    }
+
+    .nav-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-base);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-primary);
+    }
+
+    .brand-name {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+    }
+
+    .brand-sub {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-btn {
+      padding: 6px 12px;
+      border-radius: var(--radius-full);
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-decoration: none;
+      border: 1px solid var(--border-base);
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .nav-btn:hover {
+      background: var(--bg-subtle);
+      color: var(--text-primary);
+    }
+
+    .nav-btn-solid {
+      background: var(--btn-solid);
+      color: var(--btn-text);
+      border-color: var(--btn-solid);
+    }
+
+    .nav-btn-solid:hover {
+      background: var(--btn-solid-hover);
+      color: var(--btn-text);
+    }
+
+    /* Main Layout */
+    .main-wrap {
+      max-width: 1240px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 20px 20px 40px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Hero Search Bar Box */
+    .search-hero-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-base);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-soft);
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .search-input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 100%;
+    }
+
+    .search-icon-left {
+      position: absolute;
+      left: 14px;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .boolean-input {
+      width: 100%;
+      height: 48px;
+      padding: 0 46px 0 44px;
+      border-radius: var(--radius-input);
+      border: 1.5px solid var(--border-base);
+      background: var(--bg-card);
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      outline: none;
+      transition: all 0.15s ease;
+    }
+
+    .boolean-input:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 1px var(--border-focus);
+    }
+
+    .clear-search-btn {
+      position: absolute;
+      right: 12px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .boolean-chips-strip {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      font-size: 0.74rem;
+    }
+
+    .boolean-label {
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-right: 4px;
+    }
+
+    .operator-chip {
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-base);
+      color: var(--text-primary);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.12s ease;
+    }
+
+    .operator-chip:hover {
+      background: var(--bg-hover);
+    }
+
+    /* Content 2-Column Grid (Filters + Candidate Cards) */
+    .discovery-grid {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    @media (max-width: 900px) {
+      .discovery-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Filters Sidebar Card */
+    .filter-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border-base);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-soft);
+      padding: 18px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .filter-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .filter-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .reset-btn {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .reset-btn:hover {
+      color: var(--text-primary);
+      text-decoration: underline;
+    }
+
+    .filter-block {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .filter-label {
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .pills-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .filter-pill {
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-base);
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.12s ease;
+    }
+
+    .filter-pill:hover {
+      background: var(--bg-hover);
+    }
+
+    .filter-pill.active {
+      background: var(--btn-solid);
+      border-color: var(--btn-solid);
+      color: var(--btn-text);
+    }
+
+    .pill-count {
+      font-size: 0.65rem;
+      opacity: 0.75;
+    }
+
+    .filter-select,
+    .filter-input {
+      width: 100%;
+      height: 38px;
+      padding: 0 10px;
+      border-radius: var(--radius-input);
+      border: 1px solid var(--border-base);
+      background: var(--bg-card);
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-primary);
+      outline: none;
+    }
+
+    .filter-select:focus,
+    .filter-input:focus {
+      border-color: var(--border-focus);
+    }
+
+    /* Results Header */
+    .results-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .results-count-text {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .sort-control {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .sort-select {
+      height: 34px;
+      padding: 0 10px;
+      border-radius: var(--radius-input);
+      border: 1px solid var(--border-base);
+      background: var(--bg-card);
+      font-family: inherit;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* Candidate Cards Grid */
+    .candidates-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .candidate-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-base);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-soft);
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: border-color 0.15s ease, transform 0.1s ease;
+    }
+
+    .candidate-card:hover {
+      border-color: var(--border-focus);
+    }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .candidate-primary {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .name-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .cand-name {
+      font-size: 1.12rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.01em;
+    }
+
+    .status-badge {
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-base);
+      color: var(--text-secondary);
+    }
+
+    .status-interview { background: #fdf4ff; border-color: #f5d0fe; color: #86198f; }
+    .status-offered { background: #f0fdf4; border-color: #bbf7d0; color: #166534; }
+    .status-screening { background: #fffbeb; border-color: #fef08a; color: #854d0e; }
+    .status-rejected { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
+
+    .cand-role {
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .cand-loc {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Relevance Match Badge */
+    .match-score-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      text-align: right;
+    }
+
+    .score-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-base);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .score-pill.score-top {
+      background: #18181b;
+      color: #ffffff;
+      border-color: #18181b;
+    }
+
+    .score-label {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    /* Key Meta Badges Strip */
+    .meta-badges-strip {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .meta-chip {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-light);
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 0.74rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .meta-chip b {
+      color: var(--text-primary);
+    }
+
+    /* Tags Cloud inside card */
+    .cand-tags-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .skill-tag {
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-base);
+      color: var(--text-secondary);
+    }
+
+    .skill-tag.highlight-tag {
+      background: var(--btn-solid);
+      color: var(--btn-text);
+      border-color: var(--btn-solid);
+    }
+
+    /* Notes Box */
+    .cand-notes-box {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      background: var(--bg-subtle);
+      border-left: 3px solid var(--border-base);
+      padding: 6px 10px;
+      border-radius: 0 6px 6px 0;
+      line-height: 1.4;
+    }
+
+    /* Card Action Footer */
+    .card-actions-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 8px;
+      border-top: 1px solid var(--border-light);
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .fast-comm-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .comm-btn {
+      padding: 5px 10px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border-base);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      text-decoration: none;
+      transition: background 0.12s ease;
+    }
+
+    .comm-btn:hover {
+      background: var(--bg-subtle);
+    }
+
+    .comm-btn-primary {
+      background: var(--btn-solid);
+      color: var(--btn-text);
+      border-color: var(--btn-solid);
+    }
+
+    .comm-btn-primary:hover {
+      background: var(--btn-solid-hover);
+    }
+
+    /* Pagination */
+    .pagination-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 4px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .page-info {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .page-btn-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .page-nav-btn {
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border-base);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .page-nav-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .page-nav-btn:not(:disabled):hover {
+      background: var(--bg-subtle);
+    }
+
+    /* Empty state */
+    .empty-state {
+      background: var(--bg-card);
+      border: 1px solid var(--border-base);
+      border-radius: var(--radius-card);
+      padding: 40px 20px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .empty-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--bg-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+{% raw %}
+  <div id="app">
+    
+    <!-- Top Nav Header -->
+    <header class="top-navbar">
+      <div class="nav-inner">
+        <div class="nav-brand">
+          <div class="brand-icon">
+            <i data-lucide="sparkles" style="width: 18px; height: 18px;"></i>
+          </div>
+          <div>
+            <div class="brand-name">Talent Discovery</div>
+            <div class="brand-sub">Boolean Candidate Search & Matcher</div>
+          </div>
+        </div>
+
+        <div class="nav-links">
+          <a href="/apply" target="_blank" class="nav-btn">
+            <i data-lucide="plus-circle" style="width: 13px; height: 13px;"></i>
+            <span>Public Application Form</span>
+          </a>
+          <a href="/app/job-candidate" class="nav-btn nav-btn-solid">
+            <i data-lucide="layout-grid" style="width: 13px; height: 13px;"></i>
+            <span>Open in Frappe Desk</span>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <main class="main-wrap">
+      
+      <!-- Boolean Search Bar Card -->
+      <div class="search-hero-card">
+        <div class="search-input-wrap">
+          <i data-lucide="search" class="search-icon-left" style="width: 18px; height: 18px;"></i>
+          <input 
+            type="text" 
+            class="boolean-input" 
+            v-model="searchQuery" 
+            placeholder='Try Boolean search: Python AND (Vue OR Frappe) NOT Junior'
+            @keydown.enter="triggerSearch(1)"
+          >
+          <button v-if="searchQuery" class="clear-search-btn" @click="clearSearch" title="Clear">
+            <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+          </button>
+        </div>
+
+        <!-- Boolean Operator Helper Chips -->
+        <div class="boolean-chips-strip">
+          <span class="boolean-label">Query Operators:</span>
+          <button type="button" class="operator-chip" @click="insertOperator(' AND ')">AND</button>
+          <button type="button" class="operator-chip" @click="insertOperator(' OR ')">OR</button>
+          <button type="button" class="operator-chip" @click="insertOperator(' NOT ')">NOT</button>
+          <button type="button" class="operator-chip" @click="insertOperator(' (', ') ')">( )</button>
+          <button type="button" class="operator-chip" @click="insertPhraseQuotes">"Exact Phrase"</button>
+          
+          <span style="margin-left: auto; color: var(--text-muted); font-size: 0.7rem;">
+            Press Enter or tap Search to execute
+          </span>
+          <button type="button" class="nav-btn nav-btn-solid" style="padding: 4px 12px; margin-left: 6px;" @click="triggerSearch(1)">
+            Search
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Discovery 2-Column Grid -->
+      <div class="discovery-grid">
+        
+        <!-- Filters Sidebar -->
+        <aside class="filter-panel">
+          <div class="filter-header">
+            <span class="filter-title">
+              <i data-lucide="sliders-horizontal" style="width: 14px; height: 14px;"></i>
+              <span>Filters</span>
+            </span>
+            <button type="button" class="reset-btn" @click="resetAllFilters">Reset All</button>
+          </div>
+
+          <!-- Status Filter -->
+          <div class="filter-block">
+            <label class="filter-label">Recruitment Status</label>
+            <div class="pills-group">
+              <button 
+                type="button" 
+                class="filter-pill" 
+                :class="{ active: selectedStatus === '' }" 
+                @click="setStatusFilter('')">
+                All
+              </button>
+              <button 
+                v-for="st in ['New', 'Screening', 'Interview', 'Offered', 'Hired', 'Rejected']" 
+                :key="st" 
+                type="button" 
+                class="filter-pill" 
+                :class="{ active: selectedStatus === st }" 
+                @click="setStatusFilter(st)">
+                {{ st }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Profile Tags Filter -->
+          <div class="filter-block">
+            <label class="filter-label">
+              <span>Profile Tags & Skills</span>
+              <span v-if="selectedTags.length" style="font-size: 0.7rem; color: var(--text-primary); font-weight: 700;">({{ selectedTags.length }})</span>
+            </label>
+            <div class="pills-group" style="max-height: 160px; overflow-y: auto;">
+              <button 
+                v-for="item in availableTags" 
+                :key="item.tag" 
+                type="button" 
+                class="filter-pill" 
+                :class="{ active: selectedTags.includes(item.tag.toLowerCase()) }" 
+                @click="toggleTag(item.tag)">
+                <span>#{{ item.tag }}</span>
+                <span class="pill-count">({{ item.count }})</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Experience Range -->
+          <div class="filter-block">
+            <label class="filter-label">Experience (Years)</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+              <input type="number" class="filter-input" v-model="minExp" placeholder="Min (e.g. 2)" min="0" step="0.5" @change="triggerSearch(1)">
+              <input type="number" class="filter-input" v-model="maxExp" placeholder="Max (e.g. 6)" min="0" step="0.5" @change="triggerSearch(1)">
+            </div>
+          </div>
+
+          <!-- Notice Period -->
+          <div class="filter-block">
+            <label class="filter-label">Notice Period</label>
+            <div class="pills-group">
+              <button 
+                v-for="np in ['Immediate', '15 Days', '30 Days', '60 Days']" 
+                :key="np" 
+                type="button" 
+                class="filter-pill" 
+                :class="{ active: selectedNotice.includes(np) }" 
+                @click="toggleNotice(np)">
+                {{ np }}
+              </button>
+            </div>
+          </div>
+
+          <!-- City / Location -->
+          <div class="filter-block">
+            <label class="filter-label">Location / City</label>
+            <select class="filter-select" v-model="selectedLocation" @change="triggerSearch(1)">
+              <option value="">All Locations</option>
+              <option v-for="loc in availableLocations" :key="loc.location" :value="loc.location">
+                {{ loc.location }} ({{ loc.count }})
+              </option>
+            </select>
+          </div>
+
+          <!-- Max Expected CTC -->
+          <div class="filter-block">
+            <label class="filter-label">Max Expected CTC (Annual)</label>
+            <select class="filter-select" v-model="maxCtc" @change="triggerSearch(1)">
+              <option value="">Any Budget</option>
+              <option value="400000">Up to ₹4,00,000</option>
+              <option value="600000">Up to ₹6,00,000</option>
+              <option value="800000">Up to ₹8,00,000</option>
+              <option value="1000000">Up to ₹10,00,000</option>
+              <option value="1500000">Up to ₹15,00,000</option>
+            </select>
+          </div>
+
+        </aside>
+
+        <!-- Right Side: Ranked Candidates List -->
+        <section>
+          
+          <!-- Results Count & Sorting Header -->
+          <div class="results-head">
+            <div class="results-count-text">
+              Showing <b>{{ candidates.length }}</b> of <b>{{ totalCount }}</b> matching candidates 
+              <span v-if="searchQuery" style="color: var(--text-muted);">&bull; Query: <i>"{{ searchQuery }}"</i></span>
+            </div>
+
+            <div class="sort-control">
+              <label for="sort_by">Rank By:</label>
+              <select id="sort_by" class="sort-select" v-model="sortBy" @change="triggerSearch(1)">
+                <option value="relevance">🌟 Best Match (Relevance Score DESC)</option>
+                <option value="experience_desc">Experience (High to Low)</option>
+                <option value="experience_asc">Experience (Low to High)</option>
+                <option value="ctc_asc">Expected CTC (Low to High)</option>
+                <option value="newest">Newest Candidates</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Loading State -->
+          <div v-if="isLoading" style="padding: 40px; text-align: center; color: var(--text-muted);">
+            <i data-lucide="loader-2" style="width: 24px; height: 24px; animation: spin 1s linear infinite;"></i>
+            <div style="font-size: 0.85rem; font-weight: 600; margin-top: 8px;">Ranking best profiles...</div>
+          </div>
+
+          <!-- Empty State -->
+          <div v-else-if="candidates.length === 0" class="empty-state">
+            <div class="empty-icon">
+              <i data-lucide="user-x" style="width: 24px; height: 24px;"></i>
+            </div>
+            <div style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary);">No matching candidates found</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); max-width: 320px;">
+              Try loosening your Boolean operators or clearing some filters to broaden the talent pool.
+            </div>
+            <button class="nav-btn" style="margin-top: 6px;" @click="resetAllFilters">Reset All Filters</button>
+          </div>
+
+          <!-- Candidates Ranked Cards -->
+          <div v-else class="candidates-list">
+            <div 
+              v-for="cand in candidates" 
+              :key="cand.name" 
+              class="candidate-card"
+            >
+              <!-- Card Top Header -->
+              <div class="card-top">
+                <div class="candidate-primary">
+                  <div class="name-row">
+                    <span class="cand-name">{{ cand.candidate_name }}</span>
+                    <span 
+                      class="status-badge"
+                      :class="'status-' + cand.status.toLowerCase()">
+                      {{ cand.status }}
+                    </span>
+                  </div>
+                  <div class="cand-role">{{ cand.position_applied }}</div>
+                  <div class="cand-loc">
+                    <i data-lucide="map-pin" style="width: 12px; height: 12px;"></i>
+                    <span>{{ cand.current_location }}</span>
+                    &bull;
+                    <span>Source: {{ cand.source }}</span>
+                  </div>
+                </div>
+
+                <!-- Match Score Badge -->
+                <div class="match-score-badge">
+                  <div class="score-pill" :class="{ 'score-top': cand.relevance_score >= 85 }">
+                    <i data-lucide="sparkles" style="width: 12px; height: 12px;"></i>
+                    <span>{{ cand.relevance_score }}% Match</span>
+                  </div>
+                  <div class="score-label">{{ cand.match_tier }}</div>
+                </div>
+              </div>
+
+              <!-- Metadata Badges Strip -->
+              <div class="meta-badges-strip">
+                <div class="meta-chip">
+                  <i data-lucide="briefcase" style="width: 13px; height: 13px;"></i>
+                  <span>Exp: <b>{{ cand.experience_years }} Yrs</b></span>
+                </div>
+                <div class="meta-chip">
+                  <i data-lucide="clock" style="width: 13px; height: 13px;"></i>
+                  <span>Notice: <b>{{ cand.notice_period }}</b></span>
+                </div>
+                <div class="meta-chip" v-if="cand.expected_ctc">
+                  <i data-lucide="indian-rupee" style="width: 13px; height: 13px;"></i>
+                  <span>Expected: <b>₹{{ cand.expected_ctc.toLocaleString('en-IN') }}</b></span>
+                </div>
+                <div class="meta-chip" v-if="cand.resume">
+                  <i data-lucide="file-check" style="width: 13px; height: 13px;"></i>
+                  <span>PDF Resume Attached</span>
+                </div>
+              </div>
+
+              <!-- Skills & Profile Tags -->
+              <div class="cand-tags-wrap" v-if="cand.tags_list && cand.tags_list.length">
+                <span 
+                  v-for="t in cand.tags_list" 
+                  :key="t" 
+                  class="skill-tag"
+                  :class="{ 'highlight-tag': isTagMatched(t) }">
+                  #{{ t }}
+                </span>
+              </div>
+
+              <!-- HR Notes Snippet -->
+              <div class="cand-notes-box" v-if="cand.hr_notes">
+                <b>HR Remark:</b> {{ cand.hr_notes }}
+              </div>
+
+              <!-- Actions Bar -->
+              <div class="card-actions-bar">
+                <!-- Fast Follow-Up Buttons -->
+                <div class="fast-comm-group">
+                  <!-- WhatsApp Direct -->
+                  <a 
+                    :href="'https://wa.me/' + cand.clean_phone + '?text=' + encodeURIComponent('Hello ' + cand.candidate_name + ', contacting you from HR regarding ' + cand.position_applied)" 
+                    target="_blank" 
+                    class="comm-btn comm-btn-primary">
+                    <i data-lucide="message-circle" style="width: 13px; height: 13px;"></i>
+                    <span>WhatsApp</span>
+                  </a>
+
+                  <!-- Phone Call -->
+                  <a :href="'tel:' + cand.phone" class="comm-btn">
+                    <i data-lucide="phone" style="width: 13px; height: 13px;"></i>
+                    <span>Call</span>
+                  </a>
+
+                  <!-- Email -->
+                  <a :href="'mailto:' + cand.email + '?subject=' + encodeURIComponent('Regarding your application for ' + cand.position_applied)" class="comm-btn">
+                    <i data-lucide="mail" style="width: 13px; height: 13px;"></i>
+                    <span>Email</span>
+                  </a>
+
+                  <!-- PDF Resume Link -->
+                  <a v-if="cand.resume" :href="cand.resume" target="_blank" class="comm-btn" title="View PDF Resume">
+                    <i data-lucide="file-text" style="width: 13px; height: 13px;"></i>
+                    <span>Resume (PDF)</span>
+                  </a>
+                </div>
+
+                <!-- Desk Deep Link & Status Actions -->
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <!-- Fast Status Advance Dropdown -->
+                  <select 
+                    class="sort-select" 
+                    style="height: 30px; font-size: 0.72rem;" 
+                    :value="cand.status" 
+                    @change="updateStatus(cand, $event.target.value)">
+                    <option value="New">Status: New</option>
+                    <option value="Screening">Status: Screening</option>
+                    <option value="Interview">Status: Interview</option>
+                    <option value="Offered">Status: Offered</option>
+                    <option value="Hired">Status: Hired</option>
+                    <option value="Rejected">Status: Rejected</option>
+                  </select>
+
+                  <a :href="cand.desk_url" target="_blank" class="comm-btn" title="Open Document in Frappe Desk">
+                    <i data-lucide="external-link" style="width: 13px; height: 13px;"></i>
+                    <span>Desk</span>
+                  </a>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Pagination Bar -->
+          <div class="pagination-bar" v-if="totalPages > 1">
+            <div class="page-info">
+              Page <b>{{ currentPage }}</b> of <b>{{ totalPages }}</b> ({{ totalCount }} candidates)
+            </div>
+
+            <div class="page-btn-group">
+              <button 
+                type="button" 
+                class="page-nav-btn" 
+                :disabled="currentPage <= 1" 
+                @click="changePage(currentPage - 1)">
+                <i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i>
+                <span>Previous</span>
+              </button>
+
+              <button 
+                type="button" 
+                class="page-nav-btn" 
+                :disabled="currentPage >= totalPages" 
+                @click="changePage(currentPage + 1)">
+                <span>Next</span>
+                <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i>
+              </button>
+            </div>
+          </div>
+
+        </section>
+
+      </div>
+
+    </main>
+  </div>
+{% endraw %}
+
+  <script>
+    const { createApp, ref, onMounted, nextTick } = Vue;
+
+    createApp({
+      setup() {
+        const searchQuery = ref('');
+        const selectedStatus = ref('');
+        const selectedTags = ref([]);
+        const minExp = ref('');
+        const maxExp = ref('');
+        const selectedNotice = ref([]);
+        const selectedLocation = ref('');
+        const maxCtc = ref('');
+        const sortBy = ref('relevance'); // Default to Best Match (Relevance DESC)
+        
+        const currentPage = ref(1);
+        const pageSize = ref(6);
+        const totalCount = ref(0);
+        const totalPages = ref(1);
+        
+        const candidates = ref([]);
+        const availableTags = ref([]);
+        const availableLocations = ref([]);
+        const availablePositions = ref([]);
+        const isLoading = ref(false);
+
+        const fetchCandidates = async () => {
+          isLoading.value = true;
+          try {
+            const params = new URLSearchParams();
+            if (searchQuery.value.trim()) params.append('query', searchQuery.value.trim());
+            if (selectedStatus.value) params.append('status', selectedStatus.value);
+            if (selectedTags.value.length) params.append('tags', selectedTags.value.join(','));
+            if (minExp.value !== '') params.append('min_exp', minExp.value);
+            if (maxExp.value !== '') params.append('max_exp', maxExp.value);
+            if (selectedNotice.value.length) params.append('notice_periods', selectedNotice.value.join(','));
+            if (selectedLocation.value) params.append('location', selectedLocation.value);
+            if (maxCtc.value) params.append('max_ctc', maxCtc.value);
+            params.append('sort_by', sortBy.value);
+            params.append('page', currentPage.value);
+            params.append('page_size', pageSize.value);
+
+            const res = await fetch(`/api/method/face_attendance.api.search_job_candidates?${params.toString()}`);
+            const json = await res.json();
+            const data = json.message || {};
+
+            candidates.value = data.candidates || [];
+            totalCount.value = data.total_count || 0;
+            totalPages.value = data.total_pages || 1;
+            currentPage.value = data.current_page || 1;
+
+            if (data.aggregations) {
+              availableTags.value = data.aggregations.tags || [];
+              availableLocations.value = data.aggregations.locations || [];
+              availablePositions.value = data.aggregations.positions || [];
+            }
+          } catch(err) {
+            console.error('Error searching candidates:', err);
+          } finally {
+            isLoading.value = false;
+            nextTick(() => lucide.createIcons());
+          }
+        };
+
+        const triggerSearch = (page = 1) => {
+          currentPage.value = page;
+          fetchCandidates();
+        };
+
+        const clearSearch = () => {
+          searchQuery.value = '';
+          triggerSearch(1);
+        };
+
+        const insertOperator = (prefix, suffix = '') => {
+          searchQuery.value += prefix + suffix;
+        };
+
+        const insertPhraseQuotes = () => {
+          searchQuery.value += ' "" ';
+        };
+
+        const setStatusFilter = (st) => {
+          selectedStatus.value = st;
+          triggerSearch(1);
+        };
+
+        const toggleTag = (tag) => {
+          const lower = tag.toLowerCase().trim();
+          const idx = selectedTags.value.indexOf(lower);
+          if (idx >= 0) {
+            selectedTags.value.splice(idx, 1);
+          } else {
+            selectedTags.value.push(lower);
+          }
+          triggerSearch(1);
+        };
+
+        const toggleNotice = (np) => {
+          const idx = selectedNotice.value.indexOf(np);
+          if (idx >= 0) {
+            selectedNotice.value.splice(idx, 1);
+          } else {
+            selectedNotice.value.push(np);
+          }
+          triggerSearch(1);
+        };
+
+        const resetAllFilters = () => {
+          searchQuery.value = '';
+          selectedStatus.value = '';
+          selectedTags.value = [];
+          minExp.value = '';
+          maxExp.value = '';
+          selectedNotice.value = [];
+          selectedLocation.value = '';
+          maxCtc.value = '';
+          sortBy.value = 'relevance';
+          triggerSearch(1);
+        };
+
+        const changePage = (newPage) => {
+          if (newPage >= 1 && newPage <= totalPages.value) {
+            triggerSearch(newPage);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        };
+
+        const isTagMatched = (tag) => {
+          const tLower = tag.toLowerCase();
+          if (selectedTags.value.includes(tLower)) return true;
+          if (searchQuery.value && searchQuery.value.toLowerCase().includes(tLower)) return true;
+          return false;
+        };
+
+        const updateStatus = async (candidate, newStatus) => {
+          try {
+            const res = await fetch(`/api/method/face_attendance.api.update_candidate_status?candidate_id=${encodeURIComponent(candidate.name)}&new_status=${encodeURIComponent(newStatus)}`);
+            const json = await res.json();
+            if (json.message && json.message.success) {
+              candidate.status = newStatus;
+              nextTick(() => lucide.createIcons());
+            }
+          } catch(err) {
+            console.error('Status update error:', err);
+          }
+        };
+
+        onMounted(() => {
+          const urlParams = new URLSearchParams(window.location.search);
+          if (urlParams.get('query') || urlParams.get('q')) {
+            searchQuery.value = urlParams.get('query') || urlParams.get('q');
+          }
+          if (urlParams.get('tags') || urlParams.get('tag')) {
+            const rawTags = (urlParams.get('tags') || urlParams.get('tag')).split(',');
+            selectedTags.value = rawTags.map(t => t.toLowerCase().trim()).filter(Boolean);
+          }
+          if (urlParams.get('status')) selectedStatus.value = urlParams.get('status');
+          if (urlParams.get('location')) selectedLocation.value = urlParams.get('location');
+          fetchCandidates();
+          nextTick(() => lucide.createIcons());
+        });
+
+        return {
+          searchQuery,
+          selectedStatus,
+          selectedTags,
+          minExp,
+          maxExp,
+          selectedNotice,
+          selectedLocation,
+          maxCtc,
+          sortBy,
+          currentPage,
+          pageSize,
+          totalCount,
+          totalPages,
+          candidates,
+          availableTags,
+          availableLocations,
+          availablePositions,
+          isLoading,
+          triggerSearch,
+          clearSearch,
+          insertOperator,
+          insertPhraseQuotes,
+          setStatusFilter,
+          toggleTag,
+          toggleNotice,
+          resetAllFilters,
+          changePage,
+          isTagMatched,
+          updateStatus
+        };
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>

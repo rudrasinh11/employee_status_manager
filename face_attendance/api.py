@@ -578,3 +578,327 @@ def submit_job_application(
         "message": f"Thank you, {candidate.candidate_name}! Your application has been submitted successfully."
     }
 
+def evaluate_boolean_expression(text: str, expr: str) -> tuple[bool, int]:
+    """
+    Evaluates boolean query string with AND, OR, NOT, quotes and parentheses against candidate text.
+    Returns (matches: bool, hit_count: int).
+    """
+    if not expr or not expr.strip():
+        return True, 0
+
+    text_lower = text.lower()
+    raw_query = expr.strip()
+    
+    # Tokenize words, quoted phrases, and operators
+    pattern = r'(".*?"|\(|\)|\bAND\b|\bOR\b|\bNOT\b|[^\s()]+)'
+    raw_tokens = re.findall(pattern, raw_query, flags=re.IGNORECASE)
+    
+    python_expr_parts = []
+    hit_count = 0
+    prev_was_operand = False
+    
+    for tok in raw_tokens:
+        tok_upper = tok.upper()
+        if tok_upper == 'AND':
+            python_expr_parts.append('and')
+            prev_was_operand = False
+        elif tok_upper == 'OR':
+            python_expr_parts.append('or')
+            prev_was_operand = False
+        elif tok_upper == 'NOT':
+            if prev_was_operand:
+                python_expr_parts.append('and')
+            python_expr_parts.append('not')
+            prev_was_operand = False
+        elif tok == '(':
+            if prev_was_operand:
+                python_expr_parts.append('and')
+            python_expr_parts.append('(')
+            prev_was_operand = False
+        elif tok == ')':
+            python_expr_parts.append(')')
+            prev_was_operand = True
+        else:
+            term = tok.strip('"\'').lower()
+            if term:
+                is_hit = term in text_lower
+                if is_hit:
+                    hit_count += text_lower.count(term)
+                if prev_was_operand:
+                    python_expr_parts.append('and')
+                python_expr_parts.append(str(is_hit))
+                prev_was_operand = True
+                
+    if not python_expr_parts:
+        return True, 0
+        
+    eval_str = " ".join(python_expr_parts)
+    try:
+        matches = bool(eval(eval_str, {"__builtins__": {}}, {}))
+    except Exception:
+        simple_words = [w.lower() for w in re.findall(r'\w+', raw_query) if w.upper() not in ['AND', 'OR', 'NOT']]
+        matches = any(w in text_lower for w in simple_words) if simple_words else True
+        hit_count = sum(text_lower.count(w) for w in simple_words)
+        
+    return matches, hit_count
+
+@frappe.whitelist(allow_guest=True)
+def search_job_candidates(
+    query: str | None = None,
+    status: str | None = None,
+    position: str | None = None,
+    min_exp: float | None = None,
+    max_exp: float | None = None,
+    notice_periods: str | None = None,
+    location: str | None = None,
+    max_ctc: float | None = None,
+    tags: str | None = None,
+    sort_by: str = "relevance",
+    page: int = 1,
+    page_size: int = 6
+) -> dict:
+    """
+    Candidate Talent Discovery API:
+    1. Boolean Search Parser (AND, OR, NOT, Quotes, Parentheses)
+    2. Multi-Criteria Filters (Status, Position, Experience, Location, CTC, Notice)
+    3. Profile Tags & Skills Filtering
+    4. Smart Relevance Ranking (Best to Less Relevant)
+    5. Clean Pagination & Metadata Aggregations
+    """
+    page = int(page or 1)
+    page_size = int(page_size or 6)
+    
+    # 1. Fetch all candidate records from database
+    all_candidates = frappe.get_all(
+        "Job Candidate",
+        fields=[
+            "name", "candidate_name", "email", "phone", "status",
+            "position_applied", "current_location", "experience_years",
+            "notice_period", "current_ctc", "expected_ctc", "resume",
+            "source", "next_follow_up_date", "hr_notes", "profile_tags",
+            "creation"
+        ]
+    )
+    
+    # Parse list parameters
+    selected_statuses = [s.strip() for s in status.split(",") if s.strip()] if status else []
+    selected_notice = [n.strip() for n in notice_periods.split(",") if n.strip()] if notice_periods else []
+    selected_tags = [t.strip().lower() for t in tags.split(",") if t.strip()] if tags else []
+    
+    # Tag aggregations across all candidates
+    tag_counter = {}
+    location_counter = {}
+    position_counter = {}
+    
+    for c in all_candidates:
+        # Tally tags
+        raw_tags = c.get("profile_tags") or ""
+        for t in raw_tags.split(","):
+            t_clean = t.strip()
+            if t_clean:
+                tag_counter[t_clean] = tag_counter.get(t_clean, 0) + 1
+        
+        # Tally locations
+        loc = (c.get("current_location") or "").strip()
+        if loc:
+            location_counter[loc] = location_counter.get(loc, 0) + 1
+            
+        # Tally positions
+        pos = (c.get("position_applied") or "").strip()
+        if pos:
+            position_counter[pos] = position_counter.get(pos, 0) + 1
+            
+    filtered = []
+    
+    for c in all_candidates:
+        c_exp = float(c.get("experience_years") or 0)
+        c_ctc = float(c.get("expected_ctc") or 0)
+        c_loc = (c.get("current_location") or "").lower()
+        c_status = c.get("status") or "New"
+        c_notice = c.get("notice_period") or "Immediate"
+        c_pos = (c.get("position_applied") or "").lower()
+        c_tags_raw = (c.get("profile_tags") or "").lower()
+        c_tags_list = [t.strip() for t in c_tags_raw.split(",") if t.strip()]
+        
+        # Apply Status Filter
+        if selected_statuses and c_status not in selected_statuses:
+            continue
+            
+        # Apply Position Filter
+        if position and position.strip().lower() not in c_pos:
+            continue
+            
+        # Apply Experience Filter
+        if min_exp is not None and min_exp != "" and c_exp < float(min_exp):
+            continue
+        if max_exp is not None and max_exp != "" and c_exp > float(max_exp):
+            continue
+            
+        # Apply Notice Period Filter
+        if selected_notice and c_notice not in selected_notice:
+            continue
+            
+        # Apply Location Filter
+        if location and location.strip().lower() not in c_loc:
+            continue
+            
+        # Apply Max CTC Filter
+        if max_ctc is not None and max_ctc != "" and float(max_ctc) > 0:
+            if c_ctc > float(max_ctc):
+                continue
+                
+        # Apply Profile Tags Filter
+        if selected_tags:
+            # Check if candidate has at least one of the selected tags
+            if not any(req_tag in c_tags_raw for req_tag in selected_tags):
+                continue
+                
+        # Boolean Search Query Filter
+        searchable_text = f"{c.get('candidate_name', '')} {c.get('position_applied', '')} {c.get('profile_tags', '')} {c.get('current_location', '')} {c.get('notice_period', '')} {c.get('source', '')} {c.get('hr_notes', '')}"
+        
+        matches_query, hit_count = evaluate_boolean_expression(searchable_text, query or "")
+        if not matches_query:
+            continue
+            
+        # 3. Calculate Smart Relevance Ranking Score (0 to 100)
+        relevance_score = 45 # Base baseline
+        
+        if query and query.strip():
+            # Query hits bonus
+            relevance_score += min(hit_count * 10, 30)
+            # Exact position hit
+            if any(term in c_pos for term in query.lower().split() if term not in ['and', 'or', 'not']):
+                relevance_score += 15
+            # Skills tag hit
+            if any(term in c_tags_raw for term in query.lower().split() if term not in ['and', 'or', 'not']):
+                relevance_score += 10
+        else:
+            relevance_score = 65
+            
+        # Notice Period score bonus (immediate availability is valuable to HR)
+        if c_notice == "Immediate":
+            relevance_score += 10
+        elif c_notice == "15 Days":
+            relevance_score += 6
+        elif c_notice == "30 Days":
+            relevance_score += 3
+            
+        # Experience bonus
+        if 2.0 <= c_exp <= 6.0:
+            relevance_score += 8
+        elif c_exp > 6.0:
+            relevance_score += 5
+            
+        # Tag density bonus
+        if selected_tags:
+            tag_matches = sum(1 for req_t in selected_tags if req_t in c_tags_raw)
+            relevance_score += int((tag_matches / len(selected_tags)) * 15)
+            
+        # Status weight
+        if c_status == "Interview":
+            relevance_score += 6
+        elif c_status == "Screening":
+            relevance_score += 4
+        elif c_status == "New":
+            relevance_score += 2
+        elif c_status == "Rejected":
+            relevance_score -= 35
+            
+        # Clamp score
+        final_score = max(min(relevance_score, 99), 20)
+        
+        # Determine match tier
+        if final_score >= 88:
+            tier_label = "Top Match"
+            tier_icon = "star"
+        elif final_score >= 72:
+            tier_label = "Strong Fit"
+            tier_icon = "zap"
+        elif final_score >= 50:
+            tier_label = "Good Match"
+            tier_icon = "thumbs-up"
+        else:
+            tier_label = "Potential Fit"
+            tier_icon = "file-text"
+            
+        # Clean phone for WhatsApp fast follow-up
+        clean_phone = re.sub(r'[^0-9]', '', str(c.get("phone", "")))
+        if len(clean_phone) == 10:
+            clean_phone = "91" + clean_phone
+            
+        filtered.append({
+            "name": c["name"],
+            "candidate_name": c["candidate_name"],
+            "email": c["email"],
+            "phone": c["phone"],
+            "clean_phone": clean_phone,
+            "status": c_status,
+            "position_applied": c.get("position_applied") or "Team Member",
+            "current_location": c.get("current_location") or "Not Specified",
+            "experience_years": c_exp,
+            "notice_period": c_notice,
+            "current_ctc": c.get("current_ctc") or 0,
+            "expected_ctc": c_ctc,
+            "resume": c.get("resume") or "",
+            "source": c.get("source") or "Web Form",
+            "hr_notes": c.get("hr_notes") or "",
+            "profile_tags": c.get("profile_tags") or "",
+            "tags_list": [t.strip() for t in (c.get("profile_tags") or "").split(",") if t.strip()],
+            "relevance_score": final_score,
+            "match_tier": tier_label,
+            "tier_icon": tier_icon,
+            "hit_count": hit_count,
+            "desk_url": f"/app/job-candidate/{c['name']}"
+        })
+        
+    # 4. Sorting: Default to Relevance DESC (Best to Less Relevant)
+    if sort_by == "relevance":
+        filtered.sort(key=lambda x: (x["relevance_score"], x["experience_years"]), reverse=True)
+    elif sort_by == "experience_desc":
+        filtered.sort(key=lambda x: x["experience_years"], reverse=True)
+    elif sort_by == "experience_asc":
+        filtered.sort(key=lambda x: x["experience_years"])
+    elif sort_by == "ctc_asc":
+        filtered.sort(key=lambda x: x["expected_ctc"])
+    elif sort_by == "newest":
+        filtered.sort(key=lambda x: x["name"], reverse=True)
+        
+    # 5. Pagination
+    total_matches = len(filtered)
+    total_pages = math.ceil(total_matches / page_size) if total_matches > 0 else 1
+    page = min(max(1, page), total_pages)
+    
+    start_idx = (page - 1) * page_size
+    end_idx = start_idx + page_size
+    paginated_results = filtered[start_idx:end_idx]
+    
+    return {
+        "success": True,
+        "candidates": paginated_results,
+        "total_count": total_matches,
+        "total_in_db": len(all_candidates),
+        "total_pages": total_pages,
+        "current_page": page,
+        "page_size": page_size,
+        "aggregations": {
+            "tags": sorted([{"tag": k, "count": v} for k, v in tag_counter.items()], key=lambda x: x["count"], reverse=True)[:20],
+            "locations": sorted([{"location": k, "count": v} for k, v in location_counter.items()], key=lambda x: x["count"], reverse=True),
+            "positions": sorted([{"position": k, "count": v} for k, v in position_counter.items()], key=lambda x: x["count"], reverse=True)
+        }
+    }
+
+@frappe.whitelist(allow_guest=True)
+def update_candidate_status(candidate_id: str, new_status: str) -> dict:
+    """Quick 1-click status update from talent search card."""
+    if not candidate_id or not new_status:
+        return {"success": False, "message": "Candidate ID and status required"}
+    
+    if not frappe.db.exists("Job Candidate", candidate_id):
+        return {"success": False, "message": "Candidate not found"}
+        
+    frappe.db.set_value("Job Candidate", candidate_id, "status", new_status)
+    frappe.db.commit()
+    return {"success": True, "message": f"Candidate {candidate_id} status updated to {new_status}"}
+
+
+

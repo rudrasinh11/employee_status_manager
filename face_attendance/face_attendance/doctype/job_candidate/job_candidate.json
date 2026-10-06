@@ -15,6 +15,7 @@
   "col_break_1",
   "status",
   "position_applied",
+  "profile_tags",
   "current_location",
   "sec_exp",
   "experience_years",
@@ -162,6 +163,14 @@
    "fieldname": "hr_notes",
    "fieldtype": "Small Text",
    "label": "HR Screening Remarks & Follow-Up Notes"
+  },
+  {
+   "fieldname": "profile_tags",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Profile Tags / Skills",
+   "description": "Comma-separated tags e.g. Python, Frappe, Vue, Full Stack, Immediate"
   }
  ],
  "links": [],
