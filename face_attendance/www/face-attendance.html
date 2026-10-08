@@ -884,14 +884,26 @@
           }
         };
 
-        // Snapshot
+        // High-Speed Mobile Snapshot (capped to max 400px, 98% smaller payload)
         const snapFrame = () => {
           const video = document.getElementById('camera-video');
           const canvas = document.getElementById('canvas-snap');
           if (!video || !canvas) return null;
 
-          const w = video.videoWidth || 320;
-          const h = video.videoHeight || 240;
+          const rawW = video.videoWidth || 320;
+          const rawH = video.videoHeight || 240;
+          const maxDim = 400;
+          let w = rawW;
+          let h = rawH;
+          if (w > maxDim || h > maxDim) {
+            if (w > h) {
+              h = Math.round((h * maxDim) / w);
+              w = maxDim;
+            } else {
+              w = Math.round((w * maxDim) / h);
+              h = maxDim;
+            }
+          }
           canvas.width = w;
           canvas.height = h;
 
@@ -901,7 +913,7 @@
             ctx.translate(canvas.width, 0);
             ctx.scale(-1, 1);
           }
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          ctx.drawImage(video, 0, 0, w, h);
           ctx.restore();
 
           // Darkness / Covered lens check
@@ -923,25 +935,17 @@
             }
           } catch(e) {}
 
-          return { url: canvas.toDataURL('image/jpeg', 0.82) };
+          // Ultra-compact JPEG (~25KB instead of 2.5MB)
+          return { url: canvas.toDataURL('image/jpeg', 0.65), canvas: canvas };
         };
 
-        const computeSelfieDescriptor = async () => {
-          if (!capturedSelfie.value || typeof faceapi === 'undefined') return null;
+        // Ultra-Fast Neural Net Inference directly on canvas (no image decode!)
+        const computeSelfieDescriptor = async (canvasEl) => {
+          if (!canvasEl || typeof faceapi === 'undefined') return null;
           try {
-            const img = new Image();
-            img.src = capturedSelfie.value;
-            await new Promise(r => img.onload = r);
-
-            const canvas = document.createElement('canvas');
-            canvas.width = 256;
-            canvas.height = 256;
-            const ctx = canvas.getContext('2d', { willReadFrequently: true });
-            ctx.drawImage(img, 0, 0, 256, 256);
-
             const det = await faceapi.detectSingleFace(
-              canvas,
-              new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.30 })
+              canvasEl,
+              new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.25 })
             ).withFaceLandmarks(true).withFaceDescriptor();
 
             if (det) {
@@ -977,8 +981,8 @@
           securityError.value = null;
           selfieDescriptor.value = null;
 
-          // Start background AI feature extraction
-          selfieDetectionPromise = computeSelfieDescriptor();
+          // Start background AI feature extraction immediately while user types PIN!
+          selfieDetectionPromise = computeSelfieDescriptor(result.canvas);
 
           nextTick(() => lucide.createIcons());
         };
@@ -1041,63 +1045,10 @@
               return;
             }
 
-            // 2. Verify PIN and retrieve employee profile
-            const previewRes = await fetch(`/api/method/face_attendance.api.verify_pin_preview?pin=${encodeURIComponent(enteredPin)}`);
-            const previewData = await previewRes.json();
-            const profile = previewData.message;
-
-            if (!profile || !profile.success) {
-              if (profile?.locked) {
-                securityError.value = {
-                  title: 'Terminal Lockout',
-                  message: profile.message
-                };
-              } else {
-                showToast(profile?.message || 'Invalid PIN. Please try again.');
-              }
-              pinDigits.value = '';
-              isSubmitting.value = false;
-              nextTick(() => lucide.createIcons());
-              return;
-            }
-
-            // 3. Biometric Match Check against Enrolled Photo
-            let targetDescriptor = null;
-            if (profile.face_descriptor) {
-              try {
-                targetDescriptor = JSON.parse(profile.face_descriptor);
-              } catch(e) {}
-            }
-
-            if (targetDescriptor && selfieDescriptor.value) {
-              const distance = faceapi.euclideanDistance(selfieDescriptor.value, targetDescriptor);
-              console.log(`Face match distance for ${profile.employee_name}: ${distance.toFixed(4)}`);
-
-              if (distance > 0.48) {
-                // Biometric mismatch detected
-                if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-
-                securityError.value = {
-                  title: 'Biometric Mismatch',
-                  message: `The scanned face does not match the enrolled profile for ${profile.employee_name} (${profile.employee}). Proxy attendance is prevented.`,
-                  selfiePhoto: capturedSelfie.value,
-                  targetPhoto: profile.face_image
-                };
-
-                pinDigits.value = '';
-                isSubmitting.value = false;
-                nextTick(() => lucide.createIcons());
-                return;
-              }
-            }
-
-            // 4. Auto Attendance Fill-Up: System automatically assigns IN or OUT
-            const autoLog = profile.auto_log_type || 'IN';
+            // 2. Direct Single Fast API Call (No duplicate network roundtrip!)
             const payload = {
               pin: enteredPin,
               photo_base64: capturedSelfie.value,
-              log_type: autoLog,
-              match_status: 'Verified Match',
               coords: geoCoords.value,
               selfie_descriptor: JSON.stringify(selfieDescriptor.value)
             };
@@ -1130,12 +1081,24 @@
                 errorMsg = attData.exception.split(':').pop().trim();
               }
 
-              if (result && (result.face_mismatch || result.cooldown)) {
+              if (result?.locked) {
                 securityError.value = {
-                  title: result.face_mismatch ? 'Biometric Mismatch' : 'Duplicate Punch Blocked',
+                  title: 'Terminal Lockout',
+                  message: errorMsg
+                };
+              } else if (result?.face_mismatch) {
+                securityError.value = {
+                  title: 'Biometric Mismatch',
                   message: errorMsg,
                   selfiePhoto: capturedSelfie.value,
-                  targetPhoto: profile.face_image
+                  targetPhoto: result.reference_photo
+                };
+              } else if (result?.cooldown) {
+                securityError.value = {
+                  title: 'Duplicate Punch Blocked',
+                  message: errorMsg,
+                  selfiePhoto: capturedSelfie.value,
+                  targetPhoto: result.reference_photo
                 };
               } else {
                 showToast(errorMsg);

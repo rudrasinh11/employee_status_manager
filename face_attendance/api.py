@@ -297,6 +297,7 @@ def mark_face_pin_attendance(
                     return {
                         "success": False,
                         "face_mismatch": True,
+                        "reference_photo": profile.face_image or "",
                         "message": _(f"Face Mismatch! Scanned face does not match {profile.employee_name}'s official photo. Proxy punch rejected.")
                     }
         except Exception as face_err:
@@ -310,6 +311,7 @@ def mark_face_pin_attendance(
             return {
                 "success": False,
                 "cooldown": True,
+                "reference_photo": profile.face_image or "",
                 "message": _(f"Duplicate punch blocked: You already marked {resolved_log_type} {int(delta_seconds)}s ago. Please wait {remaining_wait}s.")
             }
 
